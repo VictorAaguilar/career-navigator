@@ -1,0 +1,43 @@
+export const administrativeJob = {
+  id: "job-administrative-01",
+  company: {
+    name: "Servicios Corporativos SA",
+    industry: "administration",
+  },
+  title: "Coordinador Administrativo",
+  location: {
+    country: "Mexico",
+    region: "Ciudad de México",
+    city: "Ciudad de México",
+    remoteFriendly: false,
+  },
+  modality: "on-site",
+  contract: "full-time",
+  source: "empresa directa",
+  description: "Coordinación de operaciones y soporte administrativo.",
+  responsibilities: ["Gestionar agendas", "Coordinar documentos", "Atender reuniones internas"],
+  requirements: [
+    {
+      id: "req-10",
+      originalText: "Experiencia en coordinación administrativa.",
+      category: "experience",
+      isRequired: true,
+      level: "intermediate",
+      competencyOrTool: "coordinación administrativa",
+      weight: 70,
+      extractionConfidence: 0.85,
+    },
+    {
+      id: "req-11",
+      originalText: "Manejo de paquetería Office.",
+      category: "tool",
+      isRequired: true,
+      level: "basic",
+      competencyOrTool: "Microsoft Office",
+      weight: 50,
+      extractionConfidence: 0.75,
+    },
+  ],
+  status: "open",
+  language: "Spanish",
+};
