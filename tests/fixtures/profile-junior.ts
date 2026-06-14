@@ -1,0 +1,72 @@
+export const juniorProfile = {
+  id: "junior-analyst-01",
+  professionalTitle: "Junior Data Analyst",
+  headline: "Analista junior con experiencia en proyectos académicos y de consultoría.",
+  summary: "Busco roles de análisis de datos que me permitan crecer en modelos estadísticos y visualización.",
+  location: {
+    country: "Spain",
+    region: "Madrid",
+    remoteFriendly: true,
+  },
+  workAuthorization: ["EU"],
+  targetRoles: ["Data Analyst", "Business Analyst"],
+  targetIndustries: ["technology", "education"],
+  professionalLevel: "junior",
+  experience: [
+    {
+      id: "exp-01",
+      title: "Prácticas de análisis de datos",
+      company: "Consultora Académica",
+      startDate: "2023-01-15",
+      endDate: "2023-06-30",
+      location: "Madrid",
+      summary: "Limpieza de datos y creación de dashboards para un cliente educativo.",
+      competencies: ["SQL", "Tableau"],
+      tools: ["Excel", "Power BI"],
+    },
+  ],
+  education: [
+    {
+      id: "edu-01",
+      degree: "Grado en Estadística",
+      institution: "Universidad de Madrid",
+      fieldOfStudy: "Estadística aplicable",
+      startDate: "2019-09-01",
+      endDate: "2023-06-30",
+    },
+  ],
+  projects: [
+    {
+      id: "proj-01",
+      name: "Dashboard de satisfacción estudiantil",
+      summary: "Visualicé encuestas de satisfacción y propuse mejoras basadas en análisis de tendencias.",
+      competencies: ["visualización", "análisis de tendencias"],
+      tools: ["Tableau", "Python"],
+      startDate: "2023-02-01",
+      endDate: "2023-04-30",
+    },
+  ],
+  competencies: ["SQL", "visualización", "análisis de datos"],
+  tools: ["Excel", "Tableau", "Python"],
+  languages: ["Spanish", "English"],
+  certifications: [
+    {
+      id: "cert-01",
+      name: "Certificación en Power BI",
+      issuer: "Microsoft",
+      issueDate: "2023-05-01",
+    },
+  ],
+  preferences: {
+    workArrangement: "remote",
+    employmentType: "full-time",
+    availability: "30-days",
+    remotePreferred: true,
+  },
+  restrictions: {
+    authorizedToWork: true,
+    authorizationCountries: ["ES", "EU"],
+    visaSponsorRequired: false,
+  },
+  evidenceIds: ["evidence-01", "evidence-02"],
+};
