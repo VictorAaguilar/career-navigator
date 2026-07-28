@@ -174,6 +174,13 @@ function createExplanation(
   return `No se encontró evidencia suficiente para respaldar el requisito “${requirementText}”.`;
 }
 
+function normalizeRequirementWeight(weight?: number): number {
+  if (weight === undefined) {
+    return 50;
+  }
+  return Math.min(100, Math.max(0, weight));
+}
+
 function buildRequirementResult(
   requirement: Requirement,
   status: RequirementMatchStatus,
@@ -185,6 +192,9 @@ function buildRequirementResult(
 ): RequirementMatchResult {
   const result: RequirementMatchResult = {
     requirementId: requirement.id,
+    category: requirement.category,
+    mandatory: requirement.isRequired,
+    weight: normalizeRequirementWeight(requirement.weight),
     status,
     matchedEvidenceIds: evidenceIds,
     matchStrength,
@@ -268,17 +278,7 @@ function matchRequirementWithEvidence(
   const validCandidates = candidates.filter((candidate) => candidate.status !== "not_met");
 
   if (validCandidates.length === 0) {
-    const explanation = createExplanation(requirement, "not_met", "none", [], []);
-    return RequirementMatchResultSchema.parse({
-      requirementId: requirement.id,
-      status: "not_met",
-      matchedEvidenceIds: [],
-      matchStrength: "none",
-      confidence: 0.2,
-      explanation,
-      missingInformation: [],
-      warnings: [],
-    });
+    return buildRequirementResult(requirement, "not_met", "none", [], [], [], 0.2);
   }
 
   const bestCandidate = selectBestMatch(validCandidates)!;

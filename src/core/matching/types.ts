@@ -1,13 +1,17 @@
 import { z } from "zod";
 import { ConfidenceSchema, IdSchema, NonEmptyString } from "../../schemas/common";
 
+const RequirementCategorySchema = z.enum(["skill", "experience", "education", "language", "certification", "tool", "soft-skill", "other"]);
 export const RequirementMatchStatusSchema = z.enum(["met", "partially_met", "not_met", "unknown"]);
 export const MatchStrengthSchema = z.enum(["exact", "strong", "partial", "none", "unknown"]);
 
 export const RequirementMatchResultSchema = z
   .object({
     requirementId: IdSchema,
+    category: RequirementCategorySchema,
     status: RequirementMatchStatusSchema,
+    mandatory: z.boolean(),
+    weight: z.number().min(0).max(100),
     matchedEvidenceIds: z.array(IdSchema),
     matchStrength: MatchStrengthSchema,
     confidence: ConfidenceSchema,
