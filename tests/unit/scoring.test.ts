@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { calculateGlobalConfidence, classifyScore, scoreRequirementMatch, scoreTraceabilityResult } from "../../src/core/scoring";
 import type { RequirementMatchResult } from "../../src/core/matching/types";
 
@@ -79,10 +79,12 @@ describe("Reproducible scoring engine", () => {
       buildMatch({ requirementId: "req-1", weight: 100, mandatory: true, status: "unknown", confidence: 0.4, explanation: "No hay datos de autorización laboral." }),
     ];
     const result = scoreTraceabilityResult("profile-1", "job-1", matches);
+    const requirementScore = result.requirementScores[0];
 
     expect(result.classification).toBe("insufficient_information");
-    expect(result.score).toBeGreaterThanOrEqual(0);
-    expect(result.score).toBeLessThan(50);
+    expect(result.score).toBe(0);
+    expect(requirementScore.rawContribution).toBe(0);
+    expect(requirementScore.normalizedContribution).toBe(0);
     expect(result.unknowns.length).toBe(1);
   });
 
@@ -188,6 +190,38 @@ describe("Reproducible scoring engine", () => {
     expect(first).toEqual(second);
   });
 
+  it("no incluye metadatos temporales en el resultado", () => {
+    const result = scoreTraceabilityResult("profile-1", "job-1", [
+      buildMatch({ requirementId: "req-1" }),
+    ]);
+
+    expect("generatedAt" in result).toBe(false);
+  });
+
+  it("no depende de Date, Date.now ni de la hora del sistema", () => {
+    const matches = [
+      buildMatch({ requirementId: "req-1" }),
+      buildMatch({ requirementId: "req-2", status: "partially_met", confidence: 0.8 }),
+      buildMatch({ requirementId: "req-3", status: "unknown", confidence: 0.3 }),
+    ];
+
+    vi.useFakeTimers();
+    const dateNowSpy = vi.spyOn(Date, "now");
+    try {
+      vi.setSystemTime(new Date("2000-01-01T00:00:00.000Z"));
+      const first = scoreTraceabilityResult("profile-1", "job-1", matches);
+
+      vi.setSystemTime(new Date("2099-12-31T23:59:59.000Z"));
+      const second = scoreTraceabilityResult("profile-1", "job-1", matches);
+
+      expect(second).toEqual(first);
+      expect(dateNowSpy).not.toHaveBeenCalled();
+    } finally {
+      dateNowSpy.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
   it("no asigna puntos sin evidencia a requisitos not_met", () => {
     const match = buildMatch({ requirementId: "req-1", status: "not_met", mandatory: true, weight: 80, confidence: 0.5 });
     const score = scoreRequirementMatch(match);
@@ -199,7 +233,8 @@ describe("Reproducible scoring engine", () => {
     const match = buildMatch({ requirementId: "req-1", status: "unknown", mandatory: true, weight: 80, confidence: 0.5, explanation: "Información insuficiente." });
     const score = scoreRequirementMatch(match);
 
-    expect(score.rawContribution).toBeGreaterThan(0);
-    expect(score.normalizedContribution).toBeGreaterThanOrEqual(0);
+    expect(score.rawContribution).toBe(0);
+    expect(score.normalizedContribution).toBe(0);
+    expect(score.penalty).toBe(5);
   });
 });
