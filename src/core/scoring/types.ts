@@ -49,7 +49,6 @@ export const ScoringResultSchema = z
     gaps: z.array(StrengthItemSchema),
     unknowns: z.array(StrengthItemSchema),
     warnings: z.array(NonEmptyString),
-    generatedAt: z.string(),
     scoringVersion: NonEmptyString,
   })
   .passthrough();
