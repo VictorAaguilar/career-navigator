@@ -46,3 +46,13 @@ export {
   TailoringSupportStatusSchema,
   TailoringTargetSectionSchema,
 } from "./tailoring";
+export {
+  type TailoringTargetResolution,
+  type TailoringTargetStatus,
+  type TailoringTargetingResult,
+  type TailoringTargetingSummary,
+  TailoringTargetResolutionSchema,
+  TailoringTargetStatusSchema,
+  TailoringTargetingResultSchema,
+  TailoringTargetingSummarySchema,
+} from "./targeting";
