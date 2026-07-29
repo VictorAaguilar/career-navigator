@@ -25,6 +25,23 @@ export {
   ResumeSourceSchema,
 } from "./resume";
 export {
+  type RewriteConstraint,
+  type RewriteGoal,
+  type RewriteProposal,
+  type RewriteProposalResult,
+  type RewriteProposalSummary,
+  type RewriteSkippedItem,
+  type RewriteSkippedReason,
+  CANONICAL_REWRITE_CONSTRAINTS,
+  RewriteConstraintSchema,
+  RewriteGoalSchema,
+  RewriteProposalResultSchema,
+  RewriteProposalSchema,
+  RewriteProposalSummarySchema,
+  RewriteSkippedItemSchema,
+  RewriteSkippedReasonSchema,
+} from "./rewrite";
+export {
   type TailoringAction,
   type TailoringActionType,
   type TailoringGap,
