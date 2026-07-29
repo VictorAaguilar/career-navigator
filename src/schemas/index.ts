@@ -7,6 +7,24 @@ export { ProfileSchema } from "./profile";
 export { type Requirement } from "./requirement";
 export { RequirementSchema } from "./requirement";
 export {
+  type ResumeBlock,
+  type ResumeBlockKind,
+  type ResumeDocument,
+  type ResumeSection,
+  type ResumeSectionKind,
+  type ResumeSource,
+  type ResumeSourceFormat,
+  type ResumeSourceLocator,
+  ResumeBlockKindSchema,
+  ResumeBlockSchema,
+  ResumeDocumentSchema,
+  ResumeSectionKindSchema,
+  ResumeSectionSchema,
+  ResumeSourceFormatSchema,
+  ResumeSourceLocatorSchema,
+  ResumeSourceSchema,
+} from "./resume";
+export {
   type TailoringAction,
   type TailoringActionType,
   type TailoringGap,
