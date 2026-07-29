@@ -40,7 +40,7 @@ function requirementRawContribution(match: RequirementMatchResult): number {
     case "partially_met":
       return base * 0.5;
     case "unknown":
-      return base * 0.5;
+      return 0;
     default:
       return 0;
   }
@@ -66,9 +66,7 @@ export function scoreRequirementMatch(match: RequirementMatchResult): z.infer<ty
   const weight = normalizeWeight(match.weight);
   const rawContribution = requirementRawContribution(match);
   const penalty = requirementPenalty(match);
-  const normalizedContribution = match.status === "unknown"
-    ? 0
-    : clampScore(Math.max(0, rawContribution - penalty));
+  const normalizedContribution = clampScore(Math.max(0, rawContribution - penalty));
 
   const requirementStatus = match.status;
   const result = {
@@ -84,11 +82,6 @@ export function scoreRequirementMatch(match: RequirementMatchResult): z.infer<ty
   };
 
   return RequirementScoreSchema.parse(result);
-}
-
-function deterministicGeneratedAt(): string {
-  const timestamp = Math.floor(Date.now() / 1000) * 1000;
-  return new Date(timestamp).toISOString();
 }
 
 function summarizeRequirements(scores: z.infer<typeof RequirementScoreSchema>[]): z.infer<typeof RequirementSummarySchema> {
@@ -189,7 +182,6 @@ export function scoreTraceabilityResult(
     gaps: buildGaps(requirementScores),
     unknowns: buildUnknowns(requirementScores),
     warnings: requirementMatches.flatMap((match) => match.warnings ?? []),
-    generatedAt: deterministicGeneratedAt(),
     scoringVersion,
   };
 

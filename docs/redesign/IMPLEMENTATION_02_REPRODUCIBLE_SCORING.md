@@ -35,8 +35,9 @@ Componentes principales:
 - `gaps`
 - `unknowns`
 - `warnings`
-- `generatedAt`
 - `scoringVersion`
+
+El resultado del núcleo de scoring no contiene metadatos temporales. Las fechas de generación pertenecen a capas de aplicación, almacenamiento o presentación, no a este motor determinista.
 
 ### Resultado individual por requisito
 
@@ -59,7 +60,7 @@ Componentes principales:
    - `met`: `base = weight * (mandatory ? 1.2 : 1)`
    - `partially_met`: `0.5 * base`
    - `not_met`: `0`
-   - `unknown`: `0.5 * base * confidence`
+   - `unknown`: `0`
 3. Aplica penalizaciones obligatorias:
    - `not_met` obligatorio: 15 puntos.
    - `not_met` obligatorio por certificación: 20 puntos.
@@ -84,7 +85,7 @@ La puntuación final es `clamp(0, 100, (sum(normalizedContribution) / totalPoten
 - `certificación regulatoria obligatoria ausente`: penalización de 20 puntos.
 - `unknown` obligatorio: penalización de 5 puntos.
 - `not_met` opcional no penaliza con la fórmula de requisitos, pero aparece en gaps.
-- `unknown` no se trata como `not_met` automáticamente; reduce confianza, no suma puntos.
+- `unknown` no se trata como `not_met` automáticamente; reduce confianza, no suma puntos y su contribución al score es exactamente 0.
 
 ## Clasificación
 
@@ -131,6 +132,7 @@ El resultado se limita entre 0 y 1.
 - No se calcula ranking entre ofertas.
 - No se generan recomendaciones directas.
 - No se usa información de perfil adicional más allá del matching.
+- No se incluyen timestamps ni metadatos temporales en `ScoringResult`.
 - Las penalizaciones son iniciales y pueden necesitar ajuste con datos reales.
 
 ## Cómo ejecutar las pruebas
