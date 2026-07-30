@@ -61,6 +61,29 @@ export {
   buildAppliedRewriteChangeId,
   buildRewriteApplicationId,
 } from "./application";
+export {
+  type ResumeExportBlock,
+  type ResumeExportBlockId,
+  type ResumeExportModel,
+  type ResumeExportModelId,
+  type ResumeExportScope,
+  type ResumeExportSection,
+  type ResumeExportSectionId,
+  type ResumeExportSummary,
+  type ResumeExportTextSource,
+  ResumeExportBlockIdSchema,
+  ResumeExportBlockSchema,
+  ResumeExportModelIdSchema,
+  ResumeExportModelSchema,
+  ResumeExportScopeSchema,
+  ResumeExportSectionIdSchema,
+  ResumeExportSectionSchema,
+  ResumeExportSummarySchema,
+  ResumeExportTextSourceSchema,
+  buildResumeExportBlockId,
+  buildResumeExportModelId,
+  buildResumeExportSectionId,
+} from "./export";
 export { type Offer } from "./job";
 export { OfferSchema } from "./job";
 export { type Profile } from "./profile";
