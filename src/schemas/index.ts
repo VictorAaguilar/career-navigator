@@ -7,6 +7,21 @@ export { ProfileSchema } from "./profile";
 export { type Requirement } from "./requirement";
 export { RequirementSchema } from "./requirement";
 export {
+  type GenerationEvidenceContext,
+  type GenerationEvidenceReference,
+  type GenerationResponseContract,
+  type RewriteGenerationBatch,
+  type RewriteGenerationRequest,
+  type RewriteGenerationSummary,
+  CANONICAL_GENERATION_RESPONSE_CONTRACT,
+  GenerationEvidenceContextSchema,
+  GenerationEvidenceReferenceSchema,
+  GenerationResponseContractSchema,
+  RewriteGenerationBatchSchema,
+  RewriteGenerationRequestSchema,
+  RewriteGenerationSummarySchema,
+} from "./generation";
+export {
   type ResumeBlock,
   type ResumeBlockKind,
   type ResumeDocument,
