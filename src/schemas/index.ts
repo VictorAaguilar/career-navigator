@@ -1,5 +1,25 @@
 export { type Evidence } from "./evidence";
 export { EvidenceSchema } from "./evidence";
+export {
+  type RewriteCandidateFinding,
+  type RewriteCandidateFindingCode,
+  type RewriteCandidateFindingSeverity,
+  type RewriteCandidateSubmission,
+  type RewriteCandidateValidationBatch,
+  type RewriteCandidateValidationResult,
+  type RewriteCandidateValidationScope,
+  type RewriteCandidateValidationStatus,
+  type RewriteCandidateValidationSummary,
+  RewriteCandidateFindingCodeSchema,
+  RewriteCandidateFindingSchema,
+  RewriteCandidateFindingSeveritySchema,
+  RewriteCandidateSubmissionSchema,
+  RewriteCandidateValidationBatchSchema,
+  RewriteCandidateValidationResultSchema,
+  RewriteCandidateValidationScopeSchema,
+  RewriteCandidateValidationStatusSchema,
+  RewriteCandidateValidationSummarySchema,
+} from "./candidate";
 export { type Offer } from "./job";
 export { OfferSchema } from "./job";
 export { type Profile } from "./profile";
