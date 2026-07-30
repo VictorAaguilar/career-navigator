@@ -4,3 +4,4 @@ export * from "./rewrite-proposals";
 export * from "./rewrite-generation";
 export * from "./rewrite-candidate-validation";
 export * from "./rewrite-review-decisions";
+export * from "./apply-approved-rewrites";
