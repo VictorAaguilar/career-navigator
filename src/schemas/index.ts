@@ -38,6 +38,29 @@ export {
   RewriteReviewDecisionSummarySchema,
   RewriteReviewScopeSchema,
 } from "./review";
+export {
+  type AdaptedResumeBlock,
+  type AdaptedResumeDocument,
+  type AdaptedResumeDocumentId,
+  type AdaptedResumeSection,
+  type ApplicationBlockStatus,
+  type AppliedRewriteChange,
+  type ApprovedRewriteApplicationResult,
+  type ApprovedRewriteApplicationSummary,
+  type RewriteApplicationScope,
+  AdaptedResumeBlockSchema,
+  AdaptedResumeDocumentIdSchema,
+  AdaptedResumeDocumentSchema,
+  AdaptedResumeSectionSchema,
+  ApplicationBlockStatusSchema,
+  AppliedRewriteChangeSchema,
+  ApprovedRewriteApplicationResultSchema,
+  ApprovedRewriteApplicationSummarySchema,
+  RewriteApplicationScopeSchema,
+  buildAdaptedResumeDocumentId,
+  buildAppliedRewriteChangeId,
+  buildRewriteApplicationId,
+} from "./application";
 export { type Offer } from "./job";
 export { OfferSchema } from "./job";
 export { type Profile } from "./profile";
