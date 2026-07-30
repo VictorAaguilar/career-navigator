@@ -1501,7 +1501,8 @@ describe("Resume export model", () => {
       "docs/redesign/IMPLEMENTATION_11_RESUME_EXPORT_MODEL.md",
       "utf8",
     );
-    const match = doc.match(/```json\n([\s\S]*?)\n```/);
+    const normalizedDoc = doc.replace(/\r\n/g, "\n");
+    const match = normalizedDoc.match(/```json\n([\s\S]*?)\n```/);
 
     expect(match).not.toBeNull();
     expect(ResumeExportModelSchema.safeParse(JSON.parse(match?.[1] ?? "{}")).success).toBe(true);
