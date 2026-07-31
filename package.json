@@ -3,6 +3,9 @@
   "version": "1.10.0",
   "description": "AI-powered job search pipeline — works with any AI coding CLI (Claude Code, OpenCode, Gemini, Codex, Qwen)",
   "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
   "scripts": {
     "doctor": "node doctor.mjs",
     "verify": "node verify-pipeline.mjs",
@@ -23,7 +26,10 @@
     "patterns": "node analyze-patterns.mjs",
     "gemini:eval": "node gemini-eval.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "web:dev": "npm run dev --workspace @career-navigator/web",
+    "web:build": "npm run build --workspace @career-navigator/web",
+    "web:typecheck": "npm run typecheck --workspace @career-navigator/web"
   },
   "keywords": [
     "ai",
