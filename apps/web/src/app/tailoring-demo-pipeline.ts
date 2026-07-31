@@ -7,6 +7,7 @@ import { buildRewriteReviewDecisions } from "../../../../src/core/tailoring/rewr
 import { buildTailoringPlan } from "../../../../src/core/tailoring/planner.js";
 import { resolveTailoringTargets } from "../../../../src/core/tailoring/targeting.js";
 import { scoreTraceabilityResult } from "../../../../src/core/scoring/scoring.js";
+import { matchRequirement } from "../../../../src/core/matching/matcher.js";
 import { JobMatchResultSchema, type JobMatchResult, type RequirementMatchResult } from "../../../../src/core/matching/types.js";
 import type { ApprovedRewriteApplicationResult } from "../../../../src/schemas/application.js";
 import type { RewriteCandidateSubmission, RewriteCandidateValidationBatch } from "../../../../src/schemas/candidate.js";
@@ -219,7 +220,9 @@ export function decisionIsApplicable(
 }
 
 function buildDeterministicJobMatch(profile: Profile, offer: Offer, evidences: Evidence[]): JobMatchResult {
-  const requirementMatches = offer.requirements.map((requirement) => matchRequirementDeterministically(requirement, evidences));
+  const requirementMatches = offer.requirements.map((requirement) =>
+    matchRequirement(requirement, evidences, profile),
+  );
   const result = {
     jobId: offer.id,
     profileId: profile.id,
@@ -233,70 +236,6 @@ function buildDeterministicJobMatch(profile: Profile, offer: Offer, evidences: E
     warnings: [],
   };
   return JobMatchResultSchema.parse(result);
-}
-
-function matchRequirementDeterministically(requirement: Requirement, evidences: Evidence[]): RequirementMatchResult {
-  const requirementTokens = significantTokens(requirement.originalText);
-  if (requirementTokens.length === 0) {
-    return {
-      requirementId: requirement.id,
-      category: requirement.category,
-      status: "unknown",
-      mandatory: requirement.isRequired,
-      weight: requirement.weight,
-      matchedEvidenceIds: [],
-      matchStrength: "unknown",
-      confidence: 0.2,
-      explanation: "No hay tokens suficientes para evaluar el requisito de forma determinista.",
-      missingInformation: ["Confirmar el requisito manualmente."],
-      warnings: ["Requisito ambiguo: requiere revisión humana."],
-    };
-  }
-
-  const scored = evidences
-    .map((evidence) => {
-      const evidenceTokens = new Set(significantTokens(`${evidence.title} ${evidence.description} ${(evidence.tags ?? []).join(" ")}`));
-      const hitCount = requirementTokens.filter((token) => evidenceTokens.has(token)).length;
-      return { evidence, hitCount };
-    })
-    .filter((item) => item.hitCount > 0)
-    .sort((left, right) => right.hitCount - left.hitCount || compareStable(left.evidence.id, right.evidence.id));
-
-  if (scored.length === 0) {
-    return {
-      requirementId: requirement.id,
-      category: requirement.category,
-      status: "not_met",
-      mandatory: requirement.isRequired,
-      weight: requirement.weight,
-      matchedEvidenceIds: [],
-      matchStrength: "none",
-      confidence: 0.78,
-      explanation: "No se ha encontrado evidencia literal suficiente en el currículum.",
-      missingInformation: [requirement.originalText],
-      warnings: [],
-    };
-  }
-
-  const best = scored[0];
-  const coverage = best.hitCount / requirementTokens.length;
-  const status = coverage >= 0.5 || best.hitCount >= 2 ? "met" : "partially_met";
-  return {
-    requirementId: requirement.id,
-    category: requirement.category,
-    status,
-    mandatory: requirement.isRequired,
-    weight: requirement.weight,
-    matchedEvidenceIds: [best.evidence.id],
-    matchStrength: status === "met" ? "strong" : "partial",
-    confidence: status === "met" ? 0.82 : 0.62,
-    explanation:
-      status === "met"
-        ? "El requisito comparte evidencia literal con el currículum."
-        : "El requisito comparte una señal parcial con el currículum y requiere revisión.",
-    missingInformation: status === "met" ? [] : [requirement.originalText],
-    warnings: status === "met" ? [] : ["Evidencia parcial: revisar antes de adaptar."],
-  };
 }
 
 function buildCandidateSubmissions(

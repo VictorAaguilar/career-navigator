@@ -17,6 +17,7 @@ const limitsModulePath = "../../apps/web/src/app/tailoring-demo-limits";
 const parsersModulePath = "../../apps/web/src/app/tailoring-demo-parsers";
 const pipelineModulePath = "../../apps/web/src/app/tailoring-demo-pipeline";
 const docxModulePath = "../../apps/web/src/app/tailoring-demo-docx";
+const nodeDocxRendererModulePath = "../../src/core/tailoring/docx-renderer";
 
 describe("Tailoring UI demo MVP", () => {
   let App: React.ComponentType;
@@ -33,6 +34,7 @@ describe("Tailoring UI demo MVP", () => {
   let runTailoringDemoAnalysis: (resume: string, job: string) => any;
   let TAILORING_DEMO_DOWNLOAD_FILENAME: string;
   let renderTailoringDemoDocx: (exportModel: any) => Promise<any>;
+  let renderResumeExportModelToDocx: (input: { exportModel: any }) => Promise<any>;
 
   beforeAll(async () => {
     ({ default: App } = await import(appModulePath));
@@ -48,6 +50,7 @@ describe("Tailoring UI demo MVP", () => {
       pipelineModulePath
     ));
     ({ TAILORING_DEMO_DOWNLOAD_FILENAME, renderTailoringDemoDocx } = await import(docxModulePath));
+    ({ renderResumeExportModelToDocx } = await import(nodeDocxRendererModulePath));
   });
 
   function advance(state = createTailoringDemoState()) {
@@ -105,6 +108,36 @@ describe("Tailoring UI demo MVP", () => {
     state = tailoringDemoReducer(state, { type: "set_job_text", value: `${jobText}\nNueva necesidad.` });
     expect(state.analysis).toBeNull();
     expect(state.docx.status).toBe("idle");
+  });
+
+  it("preserves input while navigating backward and reset clears all demo data", () => {
+    let state = createTailoringDemoState();
+    state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+    state = advance(state);
+    state = tailoringDemoReducer(state, { type: "set_job_text", value: jobText });
+    state = advance(state);
+    state = tailoringDemoReducer(state, { type: "navigate", direction: "back" });
+
+    expect(state.session.currentStageId).toBe("resume");
+    expect(state.resumeText).toBe(resumeText);
+    expect(state.jobText).toBe(jobText);
+
+    state = tailoringDemoReducer(state, { type: "reset_demo" });
+    expect(state.session.currentStageId).toBe("start");
+    expect(state.resumeText).toBe("");
+    expect(state.jobText).toBe("");
+    expect(state.analysis).toBeNull();
+    expect(state.appliedResult).toBeNull();
+    expect(state.docx.status).toBe("idle");
+  });
+
+  it("accepts frozen state objects and does not mutate reducer input", () => {
+    const state = Object.freeze(createTailoringDemoState());
+    const next = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+
+    expect(state.resumeText).toBe("");
+    expect(next.resumeText).toBe(resumeText);
+    expect(Object.isFrozen(next)).toBe(true);
   });
 
   it("parses resume text preserving order, Unicode and stable IDs without inference", () => {
@@ -174,6 +207,46 @@ describe("Tailoring UI demo MVP", () => {
     );
   });
 
+  it("restores deterministic proposal text after an edit", () => {
+    let state = createTailoringDemoState();
+    state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+    state = tailoringDemoReducer(state, { type: "set_job_text", value: jobText });
+    state = tailoringDemoReducer(state, { type: "run_analysis" });
+    const proposal = state.analysis.proposalRows[0];
+
+    state = tailoringDemoReducer(state, {
+      type: "edit_proposal",
+      validationId: proposal.validationId,
+      value: `${proposal.currentCandidateText}\n# Markdown`,
+    });
+    expect(state.analysis.proposalRows[0].validationStatus).toBe("rejected");
+
+    state = tailoringDemoReducer(state, { type: "restore_proposal", validationId: proposal.validationId });
+    expect(state.analysis.proposalRows[0].currentCandidateText).toBe(proposal.proposedText);
+  });
+
+  it("does not allow approving a candidate rejected by validation", () => {
+    let state = createTailoringDemoState();
+    state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+    state = tailoringDemoReducer(state, { type: "set_job_text", value: jobText });
+    state = tailoringDemoReducer(state, { type: "run_analysis" });
+    const proposal = state.analysis.proposalRows[0];
+
+    state = tailoringDemoReducer(state, {
+      type: "edit_proposal",
+      validationId: proposal.validationId,
+      value: `${proposal.currentCandidateText}\n# Markdown`,
+    });
+    state = tailoringDemoReducer(state, {
+      type: "set_review_decision",
+      validationId: proposal.validationId,
+      decision: "approved",
+    });
+
+    expect(state.reviewDecisions[proposal.validationId]).toBeUndefined();
+    expect(state.visibleError).toContain("decisión");
+  });
+
   it("applies only approved decisions and keeps rejected proposals out of preview", () => {
     const analysis = runTailoringDemoAnalysis(resumeText, jobText);
     const validationId = analysis.proposalRows[0].validationId;
@@ -202,12 +275,16 @@ describe("Tailoring UI demo MVP", () => {
       [analysis.proposalRows[0].validationId]: "approved",
     });
     const docx = await renderTailoringDemoDocx(applied.exportModel);
+    const nodeDocx = await renderResumeExportModelToDocx({ exportModel: applied.exportModel });
     const zip = await JSZip.loadAsync(Buffer.from(docx.contentBase64, "base64"));
+    const nodeZip = await JSZip.loadAsync(Buffer.from(nodeDocx.contentBase64, "base64"));
     const documentXml = await zip.file("word/document.xml")?.async("string");
+    const nodeDocumentXml = await nodeZip.file("word/document.xml")?.async("string");
 
     expect(TAILORING_DEMO_DOWNLOAD_FILENAME).toBe("curriculum-adaptado.docx");
     expect(docx.byteLength).toBeGreaterThan(0);
     expect(documentXml).toContain("React");
+    expect(documentXml).toBe(nodeDocumentXml);
     expect(documentXml).not.toContain("proposalId");
   });
 
