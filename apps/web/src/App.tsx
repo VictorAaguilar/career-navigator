@@ -1,54 +1,61 @@
-import { useMemo, useState } from "react";
+import { useMemo, useReducer } from "react";
 import { AppHeader } from "./components/AppHeader";
+import { SessionStatusBadge } from "./components/SessionStatusBadge";
 import { StagePlaceholder } from "./components/StagePlaceholder";
 import { WorkflowNavigation } from "./components/WorkflowNavigation";
 import { WorkflowStepper } from "./components/WorkflowStepper";
-import { WORKFLOW_STAGES, type WorkflowStageId } from "./app/workflow-stages";
+import { WORKFLOW_STAGES } from "./app/workflow-stages";
+import {
+  createTailoringSession,
+  getTailoringSessionStageStatus,
+  getTailoringSessionStatus,
+} from "./app/tailoring-session";
+import { tailoringSessionReducer } from "./app/tailoring-session-reducer";
 import {
   canNavigateBackward,
   canNavigateForward,
-  getNextWorkflowStage,
-  getPreviousWorkflowStage,
   getWorkflowNavigationState,
   getWorkflowStage,
 } from "./app/workflow-navigation";
 
 export default function App() {
-  const [currentStageId, setCurrentStageId] = useState<WorkflowStageId>("start");
-  const currentStage = getWorkflowStage(currentStageId);
+  const [session, dispatch] = useReducer(tailoringSessionReducer, undefined, createTailoringSession);
+  const currentStage = getWorkflowStage(session.currentStageId);
   const navigationState = useMemo(
-    () => getWorkflowNavigationState(currentStageId),
-    [currentStageId],
+    () => getWorkflowNavigationState(session.currentStageId),
+    [session.currentStageId],
   );
+  const sessionStatus = getTailoringSessionStatus(session);
 
   const handlePrevious = () => {
-    const previousStage = getPreviousWorkflowStage(currentStageId);
-    if (previousStage !== null) {
-      setCurrentStageId(previousStage.id);
-    }
+    dispatch({ type: "back" });
   };
 
   const handleNext = () => {
-    const nextStage = getNextWorkflowStage(currentStageId);
-    if (nextStage !== null) {
-      setCurrentStageId(nextStage.id);
-    }
+    dispatch({ type: "advance" });
   };
 
   return (
     <div className="app-shell">
       <AppHeader />
       <div className="app-layout">
-        <WorkflowStepper stages={WORKFLOW_STAGES} currentStageId={currentStageId} />
+        <WorkflowStepper
+          stages={WORKFLOW_STAGES}
+          currentStageId={session.currentStageId}
+          getStageStatus={(stageId) => getTailoringSessionStageStatus(session, stageId)}
+        />
         <main className="stage-panel" aria-labelledby="stage-title">
           <section className="stage-card">
-            <div className="stage-progress" aria-live="polite">
-              Paso {navigationState.currentPosition} de {navigationState.totalStages}
+            <div className="stage-meta">
+              <SessionStatusBadge status={sessionStatus} />
+              <div className="stage-progress" aria-live="polite">
+                Paso {navigationState.currentPosition} de {navigationState.totalStages}
+              </div>
             </div>
             <StagePlaceholder stage={currentStage} />
             <WorkflowNavigation
-              canGoBackward={canNavigateBackward(currentStageId)}
-              canGoForward={canNavigateForward(currentStageId)}
+              canGoBackward={canNavigateBackward(session.currentStageId)}
+              canGoForward={canNavigateForward(session.currentStageId)}
               onPrevious={handlePrevious}
               onNext={handleNext}
             />
