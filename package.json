@@ -29,7 +29,9 @@
     "test": "vitest run",
     "web:dev": "npm run dev --workspace @career-navigator/web",
     "web:build": "npm run build --workspace @career-navigator/web",
-    "web:typecheck": "npm run typecheck --workspace @career-navigator/web"
+    "web:typecheck": "npm run typecheck --workspace @career-navigator/web",
+    "web:e2e": "node tests/e2e/tailoring-demo-flow.mjs",
+    "web:e2e:headed": "node tests/e2e/tailoring-demo-flow.mjs --headed"
   },
   "keywords": [
     "ai",
