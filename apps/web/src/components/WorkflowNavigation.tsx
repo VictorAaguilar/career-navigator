@@ -3,6 +3,8 @@ type WorkflowNavigationProps = {
   canGoForward: boolean;
   onPrevious: () => void;
   onNext: () => void;
+  nextLabel?: string;
+  guardMessage?: string | null;
 };
 
 export function WorkflowNavigation({
@@ -10,15 +12,24 @@ export function WorkflowNavigation({
   canGoForward,
   onPrevious,
   onNext,
+  nextLabel = "Continuar",
+  guardMessage = null,
 }: WorkflowNavigationProps) {
   return (
-    <div className="workflow-navigation">
-      <button type="button" onClick={onPrevious} disabled={!canGoBackward}>
-        Anterior
-      </button>
-      <button type="button" className="primary-action" onClick={onNext} disabled={!canGoForward}>
-        Continuar
-      </button>
-    </div>
+    <>
+      {guardMessage === null ? null : (
+        <p className="guard-message" role="status">
+          {guardMessage}
+        </p>
+      )}
+      <div className="workflow-navigation">
+        <button type="button" onClick={onPrevious} disabled={!canGoBackward}>
+          Anterior
+        </button>
+        <button type="button" className="primary-action" onClick={onNext} disabled={!canGoForward}>
+          {nextLabel}
+        </button>
+      </div>
+    </>
   );
 }
