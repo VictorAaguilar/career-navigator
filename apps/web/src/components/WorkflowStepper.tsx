@@ -1,28 +1,27 @@
+import {
+  getTailoringSessionStageStatusLabel,
+  type TailoringSessionStageStatus,
+} from "../app/tailoring-session";
 import type { WorkflowStage, WorkflowStageId } from "../app/workflow-stages";
 
 type WorkflowStepperProps = {
   stages: readonly WorkflowStage[];
   currentStageId: WorkflowStageId;
+  getStageStatus: (stageId: WorkflowStageId) => TailoringSessionStageStatus;
 };
 
-export function WorkflowStepper({ stages, currentStageId }: WorkflowStepperProps) {
-  const currentStage = stages.find((stage) => stage.id === currentStageId);
-  const currentPosition = currentStage?.position ?? 1;
-
+export function WorkflowStepper({ stages, currentStageId, getStageStatus }: WorkflowStepperProps) {
   return (
     <nav className="workflow-stepper" aria-label="Etapas del flujo de adaptación">
       <ol>
         {stages.map((stage) => {
-          const status = stage.position < currentPosition
-            ? "Completada"
-            : stage.position === currentPosition
-              ? "Actual"
-              : "Pendiente";
+          const status = getStageStatus(stage.id);
+          const statusLabel = getTailoringSessionStageStatusLabel(status);
 
           return (
             <li
               key={stage.id}
-              className={`stepper-item stepper-item-${status.toLowerCase()}`}
+              className={`stepper-item stepper-item-${status}`}
               aria-current={stage.id === currentStageId ? "step" : undefined}
             >
               <span className="stepper-index" aria-hidden="true">
@@ -30,7 +29,7 @@ export function WorkflowStepper({ stages, currentStageId }: WorkflowStepperProps
               </span>
               <span className="stepper-copy">
                 <span className="stepper-label">{stage.shortLabel}</span>
-                <span className="stepper-status">{status}</span>
+                <span className="stepper-status">{statusLabel}</span>
               </span>
             </li>
           );
