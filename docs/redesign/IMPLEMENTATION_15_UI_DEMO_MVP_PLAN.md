@@ -49,6 +49,7 @@ La demo reutiliza contratos y funciones reales cuando son compatibles con navega
 
 - `buildResumeDocument`;
 - `EvidenceSchema`, `ProfileSchema`, `OfferSchema`;
+- `matchRequirement`;
 - `JobMatchResultSchema`;
 - `scoreTraceabilityResult`;
 - `buildTailoringPlan`;
@@ -60,11 +61,11 @@ La demo reutiliza contratos y funciones reales cuando son compatibles con navega
 - `applyApprovedRewrites`;
 - `buildResumeExportModel`.
 
-`evaluateJobRequirements` no se importa en la UI porque genera `generatedAt` con la hora actual. La demo crea `JobMatchResult` compatible con schema mediante matching superficial determinista y usa un valor fijo no temporal en el campo legacy requerido por el contrato de matching. Ese campo no se muestra ni participa en scoring, proposals, preview o exportación.
+`evaluateJobRequirements` no se importa en la UI porque genera `generatedAt` con la hora actual. En su lugar, la demo reutiliza `matchRequirement` por cada requisito y ensambla un `JobMatchResult` compatible con schema sin usar la hora del sistema. El campo legacy `generatedAt` queda con un valor fijo no temporal requerido por el contrato de matching; no se muestra ni participa en scoring, proposals, preview o exportación.
 
 ## Matching y Scoring
 
-El matching de la demo compara tokens visibles del requisito con tokens visibles de evidencia del currículum. Solo hay evidencia positiva cuando el `evidenceId` existe realmente en la entrada parseada. Si no hay coincidencia, el requisito queda como `not_met` y no obtiene evidencia.
+El matching de la demo usa la función real `matchRequirement`. Los parsers estructuran señales visibles del texto como `competencyOrTool`, `associatedCompetency` y `tags` para que el matcher pueda aplicar sus reglas existentes. Solo hay evidencia positiva cuando el `evidenceId` existe realmente en la entrada parseada. Si no hay coincidencia, el requisito queda como `not_met` y no obtiene evidencia.
 
 El scoring lo realiza `scoreTraceabilityResult`, por lo que se mantiene el contrato reproducible del núcleo: mismas entradas producen la misma salida.
 
@@ -92,9 +93,9 @@ No se renderizan campos técnicos como `proposalId`, `requestId`, `applicationId
 
 ## DOCX
 
-La arquitectura elegida es browser-first y sin backend. El renderer Node existente sigue intacto y sus pruebas continúan pasando, pero depende de `Packer.toBuffer` y `Buffer`. Para la demo web se usa el paquete `docx` ya disponible con `Packer.toBlob`, alimentado exclusivamente por el `ResumeExportModel` real.
+La arquitectura elegida es browser-first y sin backend. El renderer Node existente sigue intacto y sus pruebas continúan pasando, pero depende de `Packer.toBuffer` y `Buffer`. Para evitar divergencia de formato, el constructor puro `buildResumeExportModelDocxDocument` vive en el renderer existente y se reutiliza tanto desde Node como desde el adaptador web. La diferencia queda limitada al empaquetado: `Packer.toBuffer` y normalización ZIP en Node; `Packer.toBlob` en navegador.
 
-El resultado se devuelve con forma `DocxRenderResult` y metadatos del contrato existente. La descarga visible usa el nombre neutro y estable `curriculum-adaptado.docx`.
+El adaptador web se carga con `import()` solo cuando el usuario pulsa descargar, para no incluir `docx` en el bundle inicial. El resultado se devuelve con forma `DocxRenderResult` y metadatos del contrato existente. La descarga visible usa el nombre neutro y estable `curriculum-adaptado.docx`.
 
 ## Privacidad
 
@@ -130,6 +131,8 @@ La suite `tests/unit/tailoring-ui-demo.test.ts` cubre:
 - estado inicial e inmutabilidad;
 - acciones inválidas;
 - guardas de navegación;
+- reset;
+- aceptación de estados congelados sin mutar entrada;
 - invalidación de derivados;
 - parsing de CV y oferta;
 - límites;
@@ -137,9 +140,11 @@ La suite `tests/unit/tailoring-ui-demo.test.ts` cubre:
 - matching/scoring con contratos reales;
 - propuestas basadas en bloques existentes;
 - revalidación de ediciones;
+- restauración de propuesta;
+- bloqueo de aprobación para candidatos rechazados por validación;
 - aplicación exclusiva de aprobaciones;
 - preview y export model desde el mismo documento;
-- generación DOCX inspeccionando `word/document.xml`;
+- generación DOCX inspeccionando `word/document.xml` y comparándolo con el renderer Node;
 - SSR sin DOM test environment;
 - ausencia de APIs prohibidas en módulos nuevos.
 
@@ -173,8 +178,8 @@ git status --short
 - Sin backend local.
 - Sin persistencia ni cuentas.
 - Sin navegación directa desde el stepper.
-- El DOCX web es una salida simple desde `ResumeExportModel`, no una sustitución del renderer Node completo.
+- El empaquetado web no aplica la normalización ZIP determinista del renderer Node; la estructura visual del documento sí comparte el mismo constructor.
 
 ## Siguiente Fase Recomendada
 
-Extraer una capa común de construcción de `Document` para que el renderer Node y el adaptador browser compartan exactamente la misma maquetación sin introducir `Buffer` en el bundle web.
+Valorar si merece la pena mover también la normalización ZIP a una utilidad compatible con navegador. No es necesario para la demo local, porque el contenido visual ya comparte el constructor DOCX real y la descarga depende de una acción explícita del usuario.

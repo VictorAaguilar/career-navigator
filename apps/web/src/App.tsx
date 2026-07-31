@@ -18,16 +18,13 @@ import {
 } from "./app/tailoring-demo-state";
 import { TAILORING_DEMO_LIMIT_LABELS } from "./app/tailoring-demo-limits";
 import {
-  TAILORING_DEMO_DOWNLOAD_FILENAME,
-  docxResultToBlob,
-  renderTailoringDemoDocx,
-} from "./app/tailoring-demo-docx";
-import {
   canNavigateBackward,
   canNavigateForward,
   getWorkflowNavigationState,
   getWorkflowStage,
 } from "./app/workflow-navigation";
+
+const TAILORING_DEMO_DOWNLOAD_FILENAME = "curriculum-adaptado.docx";
 
 export default function App() {
   const [state, dispatch] = useReducer(tailoringDemoReducer, undefined, createTailoringDemoState);
@@ -56,6 +53,7 @@ export default function App() {
 
     dispatch({ type: "docx_generating" });
     try {
+      const { docxResultToBlob, renderTailoringDemoDocx } = await import("./app/tailoring-demo-docx");
       const result = await renderTailoringDemoDocx(state.appliedResult.exportModel);
       dispatch({ type: "docx_ready", result });
       const blob = docxResultToBlob(result);

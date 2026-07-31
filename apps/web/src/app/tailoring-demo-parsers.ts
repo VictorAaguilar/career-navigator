@@ -133,7 +133,7 @@ export function parseJobText(jobText: string): ParsedOfferInput {
     category: inferRequirementCategory(text),
     isRequired: true,
     level: "unspecified",
-    competencyOrTool: text,
+    competencyOrTool: primarySignal(text),
     weight: index < 10 ? 70 : 50,
     extractionConfidence: 0.74,
   }));
@@ -211,6 +211,7 @@ function parseEvidence(block: ParsedResumeBlock): Evidence {
     type: "experience",
     title: shortTitle(block.text),
     description: block.text,
+    associatedCompetency: primarySignal(block.text),
     source: "cv",
     declaredLevel: "unspecified",
     verified: false,
@@ -281,6 +282,10 @@ function inferRequirementCategory(text: string): Requirement["category"] {
 function shortTitle(value: string): string {
   const normalized = normalizeVisibleSpaces(value);
   return normalized.length <= 72 ? normalized : `${normalized.slice(0, 69)}...`;
+}
+
+function primarySignal(value: string): string | undefined {
+  return significantTokens(value)[0];
 }
 
 function normalizeVisibleSpaces(value: string): string {

@@ -68,7 +68,7 @@ export async function renderResumeExportModelToDocx(
 
   const normalizedPackage = await normalizeDocxPackage(packed);
   const contentBase64 = Buffer.from(normalizedPackage).toString("base64");
-  const summary = buildSummary(exportModel);
+  const summary = buildResumeExportModelDocxSummary(exportModel);
   const result = {
     artifactId: buildDocxArtifactId(exportModel.exportModelId, DOCX_RENDER_PROFILE),
     exportModelId: exportModel.exportModelId,
@@ -119,13 +119,13 @@ function validateRenderableText(exportModel: ResumeExportModel): void {
 
 async function packDocument(exportModel: ResumeExportModel): Promise<Buffer> {
   try {
-    return await Packer.toBuffer(buildDocument(exportModel));
+    return await Packer.toBuffer(buildResumeExportModelDocxDocument(exportModel));
   } catch {
     throwRenderError(DocxRenderErrorCode.PackingFailed);
   }
 }
 
-function buildDocument(exportModel: ResumeExportModel): Document {
+export function buildResumeExportModelDocxDocument(exportModel: ResumeExportModel): Document {
   const children = exportModel.sections.flatMap((section) => [
     buildSectionHeading(section.label),
     ...section.blocks.map((block) => buildBlockParagraph(block)),
@@ -306,7 +306,7 @@ function ensureZipSignature(content: Uint8Array): void {
   }
 }
 
-function buildSummary(exportModel: ResumeExportModel): DocxRenderSummary {
+export function buildResumeExportModelDocxSummary(exportModel: ResumeExportModel): DocxRenderSummary {
   const totalBlocks = exportModel.sections.reduce((count, section) => count + section.blocks.length, 0);
   return {
     totalSections: exportModel.sections.length,
