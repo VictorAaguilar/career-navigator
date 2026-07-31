@@ -12,6 +12,7 @@ export const DemoParserErrorCode = {
   ResumeTooManyBlocks: "TAILORING_DEMO_RESUME_TOO_MANY_BLOCKS",
   EmptyJobText: "TAILORING_DEMO_EMPTY_JOB_TEXT",
   JobTooLong: "TAILORING_DEMO_JOB_TOO_LONG",
+  NoExtractableRequirements: "TAILORING_DEMO_NO_EXTRACTABLE_REQUIREMENTS",
   TooManyRequirements: "TAILORING_DEMO_TOO_MANY_REQUIREMENTS",
   InvalidParsedProfile: "TAILORING_DEMO_INVALID_PARSED_PROFILE",
   InvalidParsedEvidence: "TAILORING_DEMO_INVALID_PARSED_EVIDENCE",
@@ -123,6 +124,9 @@ export function parseJobText(jobText: string): ParsedOfferInput {
   }
 
   const requirementTexts = extractRequirementTexts(jobText);
+  if (requirementTexts.length === 0) {
+    throw new Error(DemoParserErrorCode.NoExtractableRequirements);
+  }
   if (requirementTexts.length > TAILORING_DEMO_LIMITS.maxRequirements) {
     throw new Error(DemoParserErrorCode.TooManyRequirements);
   }
@@ -163,17 +167,20 @@ export function extractRequirementTexts(jobText: string): string[] {
   const candidates = jobText
     .split(/\r?\n/u)
     .flatMap((line) => splitJobLine(line))
-    .map(normalizeVisibleSpaces)
-    .filter((line) => line.length > 0);
+    .map((candidate) => ({
+      ...candidate,
+      text: normalizeVisibleSpaces(candidate.text),
+    }))
+    .filter((candidate) => candidate.text.length > 0 && isRequirementLike(candidate));
 
   const unique: string[] = [];
   const seen = new Set<string>();
   for (const candidate of candidates) {
-    const key = candidate.toLocaleLowerCase("es");
+    const key = candidate.text.toLocaleLowerCase("es");
     if (seen.has(key)) {
       continue;
     }
-    unique.push(candidate);
+    unique.push(candidate.text);
     seen.add(key);
   }
 
@@ -196,13 +203,22 @@ function splitResumeBlocks(resumeText: string): string[] {
     .filter((line) => line.length > 0);
 }
 
-function splitJobLine(line: string): string[] {
+type RequirementCandidate = {
+  text: string;
+  source: "bullet" | "sentence" | "line";
+};
+
+function splitJobLine(line: string): RequirementCandidate[] {
+  const isBullet = BULLET_PREFIX_PATTERN.test(line);
   const withoutBullet = line.replace(BULLET_PREFIX_PATTERN, "").trim();
   if (withoutBullet.length === 0) {
     return [];
   }
   const sentenceParts = withoutBullet.split(SENTENCE_SPLIT_PATTERN).filter((part) => part.trim().length > 0);
-  return sentenceParts.length > 1 ? sentenceParts : [withoutBullet];
+  if (sentenceParts.length > 1) {
+    return sentenceParts.map((text) => ({ text, source: isBullet ? "bullet" : "sentence" }));
+  }
+  return [{ text: withoutBullet, source: isBullet ? "bullet" : "line" }];
 }
 
 function parseEvidence(block: ParsedResumeBlock): Evidence {
@@ -286,6 +302,17 @@ function shortTitle(value: string): string {
 
 function primarySignal(value: string): string | undefined {
   return significantTokens(value)[0];
+}
+
+function isRequirementLike(candidate: RequirementCandidate): boolean {
+  const tokens = significantTokens(candidate.text);
+  if (tokens.length === 0) {
+    return false;
+  }
+  if (candidate.source === "bullet") {
+    return true;
+  }
+  return /\b(busca(?:mos|n)?|requisito|requirement|experiencia|experience|habilidad|skill|conocimiento|dominio|typescript|javascript|react|node|python|sql|git|docker|kubernetes|vite|vitest|pruebas|testing|automatizadas|frontend|backend|fullstack)\b/iu.test(candidate.text);
 }
 
 function normalizeVisibleSpaces(value: string): string {

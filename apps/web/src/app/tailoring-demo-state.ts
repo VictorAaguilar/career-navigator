@@ -363,6 +363,7 @@ function safeErrorMessage(error: unknown): string {
     TAILORING_DEMO_RESUME_TOO_MANY_BLOCKS: "El currículum tiene demasiados bloques para esta demo.",
     TAILORING_DEMO_EMPTY_JOB_TEXT: "Pega la oferta para continuar.",
     TAILORING_DEMO_JOB_TOO_LONG: "La oferta supera el límite de la demo.",
+    TAILORING_DEMO_NO_EXTRACTABLE_REQUIREMENTS: "No he encontrado requisitos concretos en la oferta. Añade habilidades, herramientas o responsabilidades específicas y vuelve a analizar.",
     TAILORING_DEMO_TOO_MANY_REQUIREMENTS: "La oferta contiene demasiados requisitos para esta demo.",
     [TailoringDemoPipelineErrorCode.TooManyProposals]: "Hay demasiadas propuestas para revisar en esta demo.",
     [TailoringDemoPipelineErrorCode.ReviewIncomplete]: "Todas las propuestas necesitan una decisión.",
