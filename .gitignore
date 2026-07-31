@@ -42,6 +42,7 @@ modes/_profile.md
 # Generated
 .resolved-prompt-*
 node_modules/
+apps/web/dist/
 bun.lock
 # Report-number reservation sentinels (ephemeral, created by reserve-report-num.mjs)
 reports/*-RESERVED.md
