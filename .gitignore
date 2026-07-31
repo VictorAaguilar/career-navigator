@@ -64,6 +64,8 @@ career-dashboard
 
 # Playwright MCP server run artifacts (ephemeral, machine-local — never commit)
 .playwright-mcp/
+test-results/
+playwright-report/
 
 # Planning (local scratchpad)
 plan/
