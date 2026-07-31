@@ -33,4 +33,48 @@ Objetivo: endurecer el MVP end-to-end de Tailoring UI sin añadir capacidades de
 
 ## Resultado Final
 
-Pendiente de completar al final del incremento.
+El incremento endurece la demo end-to-end sin añadir capacidades de producto nuevas.
+
+- `App.tsx` queda como coordinador de alto nivel y delega el detalle de cada etapa.
+- La lógica de navegación, descarga DOCX y foco vive en `useTailoringDemoController`.
+- Las nueve etapas se renderizan desde componentes independientes.
+- El título de etapa recibe foco programático al cambiar de paso.
+- Los campos de texto exponen contador y descripción accesible.
+- La revisión de propuestas expone ayuda, estado de validación y bloqueo de aprobación para candidatos rechazados.
+- El análisis rechaza ofertas sin requisitos extraíbles con un mensaje seguro que no copia CV ni oferta.
+- Los requisitos sin evidencia no generan acciones positivas.
+- La vista previa puede generarse sin cambios cuando no hay propuestas aplicables.
+- La descarga DOCX revoca el object URL después de disparar la descarga.
+- Se añade un flujo E2E con Playwright existente, sin instalar nuevas dependencias.
+- Se documentan una guía de usuario y una checklist manual de aceptación.
+
+## Archivos Principales
+
+- `apps/web/src/App.tsx`
+- `apps/web/src/app/use-tailoring-demo-controller.ts`
+- `apps/web/src/app/tailoring-demo-constants.ts`
+- `apps/web/src/app/tailoring-demo-parsers.ts`
+- `apps/web/src/app/tailoring-demo-state.ts`
+- `apps/web/src/components/stages/*`
+- `tests/unit/tailoring-acceptance-hardening.test.ts`
+- `tests/e2e/tailoring-demo-flow.mjs`
+- `docs/redesign/TAILORING_DEMO_USER_GUIDE.md`
+- `docs/redesign/TAILORING_DEMO_ACCEPTANCE_CHECKLIST.md`
+
+## Pruebas Añadidas
+
+La cobertura añadida verifica:
+
+- render independiente de las nueve etapas;
+- foco accesible del título de etapa;
+- ausencia de estado paralelo `currentStageId`;
+- error seguro para oferta sin requisitos;
+- cero coincidencias sin evidencia inventada;
+- cero propuestas con vista previa sin cambios;
+- revocación de object URL en descarga DOCX;
+- ausencia de storage, red, LLM y logging en los nuevos módulos de UI;
+- flujo de navegador con análisis, revisión, vista previa y descarga DOCX.
+
+## Limitaciones
+
+La demo sigue siendo local y en memoria. No incluye subida de archivos, backend, OCR, LLM, autenticación, almacenamiento ni persistencia.
