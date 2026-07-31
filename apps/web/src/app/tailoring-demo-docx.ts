@@ -15,8 +15,6 @@ import {
   type DocxRenderResult,
 } from "../../../../src/schemas/docx-render.js";
 
-export const TAILORING_DEMO_DOWNLOAD_FILENAME = "curriculum-adaptado.docx";
-
 export async function renderTailoringDemoDocx(exportModel: ResumeExportModel): Promise<DocxRenderResult> {
   const blob = await Packer.toBlob(buildResumeExportModelDocxDocument(exportModel));
   const bytes = new Uint8Array(await blob.arrayBuffer());

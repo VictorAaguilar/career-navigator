@@ -17,6 +17,7 @@ const limitsModulePath = "../../apps/web/src/app/tailoring-demo-limits";
 const parsersModulePath = "../../apps/web/src/app/tailoring-demo-parsers";
 const pipelineModulePath = "../../apps/web/src/app/tailoring-demo-pipeline";
 const docxModulePath = "../../apps/web/src/app/tailoring-demo-docx";
+const constantsModulePath = "../../apps/web/src/app/tailoring-demo-constants";
 const nodeDocxRendererModulePath = "../../src/core/tailoring/docx-renderer";
 
 describe("Tailoring UI demo MVP", () => {
@@ -49,7 +50,8 @@ describe("Tailoring UI demo MVP", () => {
     ({ applyTailoringDemoReview, rebuildValidationWithCandidates, runTailoringDemoAnalysis } = await import(
       pipelineModulePath
     ));
-    ({ TAILORING_DEMO_DOWNLOAD_FILENAME, renderTailoringDemoDocx } = await import(docxModulePath));
+    ({ renderTailoringDemoDocx } = await import(docxModulePath));
+    ({ TAILORING_DEMO_DOWNLOAD_FILENAME } = await import(constantsModulePath));
     ({ renderResumeExportModelToDocx } = await import(nodeDocxRendererModulePath));
   });
 
