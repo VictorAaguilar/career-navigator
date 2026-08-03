@@ -90,6 +90,13 @@ export type DemoAppliedResult = Readonly<{
 
 export function runTailoringDemoAnalysis(resumeText: string, jobText: string): DemoAnalysisResult {
   const parsedResume = parseResumeText(resumeText);
+  return runTailoringDemoAnalysisWithParsedResume(parsedResume, jobText);
+}
+
+export function runTailoringDemoAnalysisWithParsedResume(
+  parsedResume: ParsedResumeInput,
+  jobText: string,
+): DemoAnalysisResult {
   const parsedOffer = parseJobText(jobText);
   const jobMatchResult = buildDeterministicJobMatch(
     parsedResume.profile,

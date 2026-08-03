@@ -50,6 +50,7 @@ export function useTailoringDemoController() {
   const [isApplyingReview, setIsApplyingReview] = useState(false);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const resumeTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const resumeStructureSummaryRef = useRef<HTMLDivElement | null>(null);
   const resumeImportSequenceRef = useRef(0);
   const session = state.session;
   const currentStage = getWorkflowStage(session.currentStageId);
@@ -128,6 +129,13 @@ export function useTailoringDemoController() {
     resumeTextareaRef.current?.focus({ preventScroll: false });
   };
 
+  const handleDetectResumeStructure = () => {
+    dispatch({ type: "detect_resume_structure" });
+    window.setTimeout(() => {
+      resumeStructureSummaryRef.current?.focus({ preventScroll: false });
+    }, 0);
+  };
+
   const handleApplyReview = () => {
     setIsApplyingReview(true);
     try {
@@ -172,6 +180,7 @@ export function useTailoringDemoController() {
     guardMessage,
     titleRef,
     resumeTextareaRef,
+    resumeStructureSummaryRef,
     isAnalyzing,
     isApplyingReview,
     canGoBackward: canNavigateBackward(session.currentStageId),
@@ -181,6 +190,7 @@ export function useTailoringDemoController() {
     handleRunAnalysis,
     handleResumeFileSelected,
     handleClearResumeImport,
+    handleDetectResumeStructure,
     handleApplyReview,
     handleDownload,
   };

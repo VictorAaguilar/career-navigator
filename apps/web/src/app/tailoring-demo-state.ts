@@ -9,18 +9,30 @@ import { createTailoringSession, type TailoringSession } from "./tailoring-sessi
 import { tailoringSessionReducer } from "./tailoring-session-reducer.js";
 import type { WorkflowStageId } from "./workflow-stages.js";
 import { TAILORING_DEMO_LIMITS } from "./tailoring-demo-limits.js";
+import { parseResumeText } from "./tailoring-demo-parsers.js";
 import {
   applyTailoringDemoReview,
   decisionIsApplicable,
   isReviewComplete,
   rebuildValidationWithCandidates,
   runTailoringDemoAnalysis,
+  runTailoringDemoAnalysisWithParsedResume,
   TailoringDemoPipelineErrorCode,
   type DemoAnalysisResult,
   type DemoAppliedResult,
   type DemoReviewDecisionType,
   type DemoReviewState,
 } from "./tailoring-demo-pipeline.js";
+import {
+  buildParsedResumeFromStructuredDraft,
+  parseStructuredResumeText,
+  StructuredResumeErrorCode,
+  updateStructuredResumeSectionKind,
+  type StructuredResumeDraft,
+  type StructuredResumeParseMode,
+  type StructuredResumeSectionKind,
+  type StructuredResumeWarningCode,
+} from "./structured-resume-parsing.js";
 
 export const TAILORING_DEMO_ACTION_INVALID_ERROR = "TAILORING_DEMO_ACTION_INVALID";
 
@@ -38,10 +50,36 @@ export type ResumeImportState = Readonly<
   | { status: "error"; source: ResumeImportSource; warnings: readonly []; errorCode: ResumeImportErrorCode }
 >;
 
+export type ResumeStructureState = Readonly<
+  | { status: "idle"; mode: null; draft: null; warnings: readonly []; errorCode: null }
+  | {
+      status: "detected";
+      mode: null;
+      draft: StructuredResumeDraft;
+      warnings: readonly StructuredResumeWarningCode[];
+      errorCode: null;
+    }
+  | {
+      status: "confirmed";
+      mode: StructuredResumeParseMode;
+      draft: StructuredResumeDraft | null;
+      warnings: readonly StructuredResumeWarningCode[];
+      errorCode: null;
+    }
+  | {
+      status: "error";
+      mode: null;
+      draft: null;
+      warnings: readonly [];
+      errorCode: typeof StructuredResumeErrorCode[keyof typeof StructuredResumeErrorCode];
+    }
+>;
+
 export type TailoringDemoState = Readonly<{
   session: TailoringSession;
   resumeText: string;
   resumeImport: ResumeImportState;
+  resumeStructure: ResumeStructureState;
   jobText: string;
   analysis: DemoAnalysisResult | null;
   reviewDecisions: DemoReviewState;
@@ -62,6 +100,11 @@ export type TailoringDemoAction =
     }
   | { type: "resume_import_failed"; source: ResumeImportSource; errorCode: ResumeImportErrorCode }
   | { type: "resume_import_cleared" }
+  | { type: "detect_resume_structure" }
+  | { type: "set_resume_section_kind"; sectionId: string; kind: StructuredResumeSectionKind }
+  | { type: "confirm_resume_structure" }
+  | { type: "use_plain_resume_parser" }
+  | { type: "clear_resume_structure" }
   | { type: "set_job_text"; value: string }
   | { type: "clear_job_text" }
   | { type: "run_analysis" }
@@ -82,6 +125,11 @@ const allowedActionTypes = Object.freeze([
   "resume_import_succeeded",
   "resume_import_failed",
   "resume_import_cleared",
+  "detect_resume_structure",
+  "set_resume_section_kind",
+  "confirm_resume_structure",
+  "use_plain_resume_parser",
+  "clear_resume_structure",
   "set_job_text",
   "clear_job_text",
   "run_analysis",
@@ -101,6 +149,7 @@ export function createTailoringDemoState(): TailoringDemoState {
     session: createTailoringSession(),
     resumeText: "",
     resumeImport: idleResumeImport(),
+    resumeStructure: idleResumeStructure(),
     jobText: "",
     analysis: null,
     reviewDecisions: {},
@@ -128,7 +177,8 @@ export function tailoringDemoReducer(
     return freezeState({
       ...state,
       resumeText: action.value,
-      ...emptyDerivedState(),
+      resumeStructure: idleResumeStructure(),
+      ...emptyAnalysisState(),
       visibleError: null,
     });
   }
@@ -138,7 +188,8 @@ export function tailoringDemoReducer(
       ...state,
       resumeText: "",
       resumeImport: idleResumeImport(),
-      ...emptyDerivedState(),
+      resumeStructure: idleResumeStructure(),
+      ...emptyAnalysisState(),
       visibleError: null,
     });
   }
@@ -147,6 +198,8 @@ export function tailoringDemoReducer(
     return freezeState({
       ...state,
       resumeImport: { status: "reading", source: action.source, warnings: [], errorCode: null },
+      resumeStructure: idleResumeStructure(),
+      ...emptyAnalysisState(),
       visibleError: null,
     });
   }
@@ -161,7 +214,8 @@ export function tailoringDemoReducer(
         warnings: [...action.warnings].sort(compareStable),
         errorCode: null,
       },
-      ...emptyDerivedState(),
+      resumeStructure: idleResumeStructure(),
+      ...emptyAnalysisState(),
       visibleError: null,
     });
   }
@@ -170,7 +224,8 @@ export function tailoringDemoReducer(
     return freezeState({
       ...state,
       resumeImport: { status: "error", source: action.source, warnings: [], errorCode: action.errorCode },
-      ...emptyDerivedState(),
+      resumeStructure: idleResumeStructure(),
+      ...emptyAnalysisState(),
       visibleError: null,
     });
   }
@@ -180,7 +235,105 @@ export function tailoringDemoReducer(
       ...state,
       resumeText: "",
       resumeImport: idleResumeImport(),
-      ...emptyDerivedState(),
+      resumeStructure: idleResumeStructure(),
+      ...emptyAnalysisState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "detect_resume_structure") {
+    try {
+      const result = parseStructuredResumeText(state.resumeText);
+      return freezeState({
+        ...state,
+        resumeStructure: {
+          status: "detected",
+          mode: null,
+          draft: result.draft,
+          warnings: result.warnings,
+          errorCode: null,
+        },
+        ...emptyAnalysisState(),
+        visibleError: null,
+      });
+    } catch {
+      return freezeState({
+        ...state,
+        resumeStructure: {
+          status: "error",
+          mode: null,
+          draft: null,
+          warnings: [],
+          errorCode: StructuredResumeErrorCode.InputInvalid,
+        },
+        ...emptyAnalysisState(),
+        visibleError: "No se pudo detectar una estructura revisable. Puedes corregir el texto o usar el análisis de texto plano.",
+      });
+    }
+  }
+
+  if (action.type === "set_resume_section_kind") {
+    if (state.resumeStructure.draft === null) {
+      return freezeState({ ...state, visibleError: "Detecta una estructura antes de cambiar categorías." });
+    }
+    try {
+      const draft = state.resumeStructure.draft;
+      const nextDraft = updateStructuredResumeSectionKind(draft, action.sectionId, action.kind);
+      return freezeState({
+        ...state,
+        resumeStructure: {
+          status: "detected",
+          mode: null,
+          draft: nextDraft,
+          warnings: nextDraft.warningCodes,
+          errorCode: null,
+        },
+        ...emptyAnalysisState(),
+        visibleError: null,
+      });
+    } catch {
+      return freezeState({ ...state, visibleError: "La categoría seleccionada no es válida para esta sección." });
+    }
+  }
+
+  if (action.type === "confirm_resume_structure") {
+    if (state.resumeStructure.draft === null) {
+      return freezeState({ ...state, visibleError: "Detecta y revisa la estructura antes de confirmarla." });
+    }
+    return freezeState({
+      ...state,
+      resumeStructure: {
+        status: "confirmed",
+        mode: "structured",
+        draft: state.resumeStructure.draft,
+        warnings: state.resumeStructure.draft.warningCodes,
+        errorCode: null,
+      },
+      ...emptyAnalysisState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "use_plain_resume_parser") {
+    return freezeState({
+      ...state,
+      resumeStructure: {
+        status: "confirmed",
+        mode: "plain",
+        draft: state.resumeStructure.draft,
+        warnings: state.resumeStructure.draft?.warningCodes ?? [],
+        errorCode: null,
+      },
+      ...emptyAnalysisState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "clear_resume_structure") {
+    return freezeState({
+      ...state,
+      resumeStructure: idleResumeStructure(),
+      ...emptyAnalysisState(),
       visibleError: null,
     });
   }
@@ -189,7 +342,7 @@ export function tailoringDemoReducer(
     return freezeState({
       ...state,
       jobText: action.value,
-      ...emptyDerivedState(),
+      ...emptyAnalysisState(),
       visibleError: null,
     });
   }
@@ -198,14 +351,17 @@ export function tailoringDemoReducer(
     return freezeState({
       ...state,
       jobText: "",
-      ...emptyDerivedState(),
+      ...emptyAnalysisState(),
       visibleError: null,
     });
   }
 
   if (action.type === "run_analysis") {
     try {
-      const analysis = runTailoringDemoAnalysis(state.resumeText, state.jobText);
+      const parsedResume = resolveParsedResumeForAnalysis(state);
+      const analysis = state.resumeStructure.mode === "structured"
+        ? runTailoringDemoAnalysisWithParsedResume(parsedResume, state.jobText)
+        : runTailoringDemoAnalysis(state.resumeText, state.jobText);
       return freezeState({
         ...state,
         analysis,
@@ -215,7 +371,7 @@ export function tailoringDemoReducer(
         visibleError: null,
       });
     } catch (error) {
-      return freezeState({ ...state, visibleError: safeErrorMessage(error), ...emptyDerivedState() });
+      return freezeState({ ...state, visibleError: safeErrorMessage(error), ...emptyAnalysisState() });
     }
   }
 
@@ -281,7 +437,7 @@ export function canAdvanceTailoringDemo(state: TailoringDemoState): boolean {
     return true;
   }
   if (stageId === "resume") {
-    return validateTextForStage("resume", state.resumeText) === null;
+    return validateTextForStage("resume", state.resumeText) === null && resumeParseModeIsReady(state);
   }
   if (stageId === "job") {
     return validateTextForStage("job", state.jobText) === null;
@@ -316,7 +472,7 @@ export function validateTextForStage(stageId: "resume" | "job", value: string): 
 export function getStageGuardMessage(state: TailoringDemoState): string | null {
   const stageId = state.session.currentStageId;
   if (stageId === "resume") {
-    return validateTextForStage("resume", state.resumeText);
+    return validateTextForStage("resume", state.resumeText) ?? getResumeStructureGuardMessage(state);
   }
   if (stageId === "job") {
     return validateTextForStage("job", state.jobText);
@@ -409,7 +565,7 @@ function assertTailoringDemoAction(value: unknown): asserts value is TailoringDe
   }
 }
 
-function emptyDerivedState(): Pick<TailoringDemoState, "analysis" | "reviewDecisions" | "appliedResult" | "docx"> {
+function emptyAnalysisState(): Pick<TailoringDemoState, "analysis" | "reviewDecisions" | "appliedResult" | "docx"> {
   return {
     analysis: null,
     reviewDecisions: {},
@@ -424,6 +580,40 @@ function idleDocx(): TailoringDemoDocxState {
 
 function idleResumeImport(): ResumeImportState {
   return { status: "idle", source: "manual", warnings: [], errorCode: null };
+}
+
+function idleResumeStructure(): ResumeStructureState {
+  return { status: "idle", mode: null, draft: null, warnings: [], errorCode: null };
+}
+
+function resumeParseModeIsReady(state: TailoringDemoState): boolean {
+  return state.resumeStructure.status === "confirmed" && state.resumeStructure.mode !== null;
+}
+
+function getResumeStructureGuardMessage(state: TailoringDemoState): string | null {
+  if (state.resumeStructure.status === "detected") {
+    return "Confirma la estructura detectada o elige el análisis de texto plano.";
+  }
+  if (state.resumeStructure.status === "error") {
+    return "Corrige el texto, vuelve a detectar la estructura o usa el análisis de texto plano.";
+  }
+  if (!resumeParseModeIsReady(state)) {
+    return "Detecta y confirma la estructura del currículum, o elige continuar con texto plano.";
+  }
+  return null;
+}
+
+function resolveParsedResumeForAnalysis(state: TailoringDemoState) {
+  if (state.resumeStructure.mode === "structured") {
+    if (state.resumeStructure.draft === null) {
+      throw new Error(StructuredResumeErrorCode.NotConfirmed);
+    }
+    return buildParsedResumeFromStructuredDraft(state.resumeStructure.draft);
+  }
+  if (state.resumeStructure.mode === "plain") {
+    return parseResumeText(state.resumeText);
+  }
+  throw new Error(StructuredResumeErrorCode.ModeRequired);
 }
 
 function safeErrorMessage(error: unknown): string {
@@ -442,6 +632,9 @@ function safeErrorMessage(error: unknown): string {
     [TailoringDemoPipelineErrorCode.TooManyProposals]: "Hay demasiadas propuestas para revisar en esta demo.",
     [TailoringDemoPipelineErrorCode.ReviewIncomplete]: "Todas las propuestas necesitan una decisión.",
     [TailoringDemoPipelineErrorCode.EditedProposalTooLong]: "La edición supera el límite permitido.",
+    [StructuredResumeErrorCode.ModeRequired]: "Elige análisis estructurado confirmado o análisis de texto plano antes de analizar.",
+    [StructuredResumeErrorCode.NotConfirmed]: "Confirma la estructura detectada antes de analizar.",
+    [StructuredResumeErrorCode.DocumentInvalid]: "La estructura revisada no pudo convertirse en un documento válido.",
   };
   return visibleMessages[message] ?? "No se pudo completar la operación con los datos actuales.";
 }

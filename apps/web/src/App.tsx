@@ -19,6 +19,7 @@ export default function App() {
     guardMessage,
     titleRef,
     resumeTextareaRef,
+    resumeStructureSummaryRef,
     isAnalyzing,
     isApplyingReview,
     canGoBackward,
@@ -27,6 +28,7 @@ export default function App() {
     handleNext,
     handleResumeFileSelected,
     handleClearResumeImport,
+    handleDetectResumeStructure,
     handleRunAnalysis,
     handleApplyReview,
     handleDownload,
@@ -59,9 +61,11 @@ export default function App() {
               stage={currentStage}
               titleRef={titleRef}
               resumeTextareaRef={resumeTextareaRef}
+              resumeStructureSummaryRef={resumeStructureSummaryRef}
               onStart={handleNext}
               onResumeFileSelected={handleResumeFileSelected}
               onClearResumeImport={handleClearResumeImport}
+              onDetectResumeStructure={handleDetectResumeStructure}
               onRunAnalysis={handleRunAnalysis}
               onApplyReview={handleApplyReview}
               onDownload={handleDownload}

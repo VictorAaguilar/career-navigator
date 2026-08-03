@@ -88,6 +88,7 @@ describe("local resume file import", () => {
     });
 
     expect(state.resumeText).toContain("Importado desde PDF");
+    expect(state.resumeStructure.status).toBe("idle");
     expect(state.analysis).toBeNull();
     expect(state.reviewDecisions).toEqual({});
     expect(state.appliedResult).toBeNull();
@@ -102,6 +103,7 @@ describe("local resume file import", () => {
       text: validResume,
       warnings: [],
     });
+    state = tailoringDemoReducer(state, { type: "use_plain_resume_parser" });
     state = tailoringDemoReducer(state, { type: "set_job_text", value: validJob });
     state = tailoringDemoReducer(state, { type: "run_analysis" });
     expect(state.analysis).not.toBeNull();
@@ -294,8 +296,10 @@ describe("local resume file import", () => {
         state: createTailoringDemoState(),
         dispatch: () => undefined,
         textareaRef: { current: null },
+        structureSummaryRef: { current: null },
         onFileSelected: () => undefined,
         onClearImport: () => undefined,
+        onDetectStructure: () => undefined,
       }),
     );
 
@@ -304,6 +308,8 @@ describe("local resume file import", () => {
     expect(markup).toContain("no hay OCR");
     expect(markup).toContain('type="file"');
     expect(markup).toContain(".docx,.pdf,application/pdf");
+    expect(markup).toContain("Estructura del curr");
+    expect(markup).toContain("Detectar estructura");
     expect(markup).toContain("<textarea");
   });
 
@@ -313,6 +319,7 @@ describe("local resume file import", () => {
       "apps/web/src/app/resume-file-import.ts",
       "apps/web/src/app/use-tailoring-demo-controller.ts",
       "apps/web/src/app/tailoring-demo-state.ts",
+      "apps/web/src/app/structured-resume-parsing.ts",
       "apps/web/src/components/stages/ResumeStage.tsx",
     ].map((file) => readFileSync(join(process.cwd(), file), "utf8")).join("\n");
 
@@ -326,6 +333,7 @@ describe("local resume file import", () => {
 function analyzedState() {
   let state = createTailoringDemoStateRef();
   state = reducerRef(state, { type: "set_resume_text", value: validResume });
+  state = reducerRef(state, { type: "use_plain_resume_parser" });
   state = reducerRef(state, { type: "set_job_text", value: validJob });
   return reducerRef(state, { type: "run_analysis" });
 }
