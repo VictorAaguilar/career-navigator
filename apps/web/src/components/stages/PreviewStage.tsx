@@ -1,5 +1,5 @@
 import type { TailoringDemoState } from "../../app/tailoring-demo-state";
-import { EmptyState, Metric, TwoColumnText } from "./shared";
+import { EmptyState, LocationExplanation, Metric, TwoColumnText } from "./shared";
 
 export function PreviewStage({ state }: { state: TailoringDemoState }) {
   const applied = state.appliedResult;
@@ -8,6 +8,8 @@ export function PreviewStage({ state }: { state: TailoringDemoState }) {
   }
 
   const summary = applied.reviewDecisionBatch.summary;
+  const appliedRows = applied.traceabilityRows.filter((row) => row.outcome === "applied");
+  const notAppliedRows = applied.traceabilityRows.filter((row) => row.outcome === "not_applied");
   return (
     <div className="demo-section">
       <div className="metric-grid">
@@ -31,14 +33,45 @@ export function PreviewStage({ state }: { state: TailoringDemoState }) {
       {applied.applicationResult.changes.length === 0 ? (
         <p className="field-note">No se aplicaron cambios aprobados. El preview conserva el texto original.</p>
       ) : (
-        <div className="demo-list">
-          {applied.applicationResult.changes.map((change) => (
-            <article className="demo-item" key={change.changeId}>
-              <h3>Cambio aplicado</h3>
-              <TwoColumnText original={change.beforeText} candidate={change.afterText} />
-            </article>
-          ))}
-        </div>
+        <section className="traceability-section" aria-labelledby="applied-traceability-title">
+          <h3 id="applied-traceability-title">Cambios aplicados</h3>
+          <div className="demo-list">
+            {appliedRows.map((row) => (
+              <article className="demo-item" key={row.validationId}>
+                <h4>{row.outcomeLabel}</h4>
+                <p>
+                  <strong>Decisión:</strong> {row.decisionLabel}
+                </p>
+                <LocationExplanation
+                  title="Ubicación"
+                  location={row.location}
+                  relatedRequirement={row.requirementText}
+                />
+                <TwoColumnText original={row.beforeText} candidate={row.afterText} />
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+      {notAppliedRows.length === 0 ? null : (
+        <section className="traceability-section" aria-labelledby="not-applied-traceability-title">
+          <h3 id="not-applied-traceability-title">Cambios no aplicados</h3>
+          <div className="demo-list">
+            {notAppliedRows.map((row) => (
+              <article className="demo-item" key={row.validationId}>
+                <h4>{row.outcomeLabel}</h4>
+                <p>
+                  <strong>Decisión:</strong> {row.decisionLabel}
+                </p>
+                <LocationExplanation
+                  title="Ubicación"
+                  location={row.location}
+                  relatedRequirement={row.requirementText}
+                />
+              </article>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );
