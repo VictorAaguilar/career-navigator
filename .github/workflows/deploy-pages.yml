@@ -90,7 +90,8 @@ jobs:
 
       - name: Explain skipped deployment
         if: env.IS_DEPLOYABLE_REF != 'true'
-        run: echo "GITHUB_PAGES_DEPLOY_SKIPPED: pull_request and non-universal-redesign refs validate without deploying."
+        run: |
+          echo "GITHUB_PAGES_DEPLOY_SKIPPED: pull_request and non-universal-redesign refs validate without deploying."
 
   deploy:
     name: Deploy Pages artifact
