@@ -1,9 +1,12 @@
-import { access, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { chromium } from "playwright";
 import JSZip from "jszip";
+import {
+  launchBrowserWithFallback,
+} from "./tailoring-demo-browser-options.mjs";
 
 const headed = process.argv.includes("--headed");
 const port = 5174;
@@ -74,37 +77,45 @@ async function waitForServer() {
 
 async function run() {
   const downloadDir = await mkdtemp(join(tmpdir(), "career-navigator-e2e-"));
-  await assertChromiumInstalled();
-  const browser = await chromium.launch({ headless: !headed });
-  const page = await browser.newPage({ acceptDownloads: true });
-  const consoleErrors = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") {
-      consoleErrors.push(message.text());
-    }
-  });
-  page.on("pageerror", (error) => {
-    consoleErrors.push(error.message);
-  });
+  let browser;
 
   try {
+    ({ browser } = await launchBrowserWithFallback({
+      launcher: chromium,
+      headed,
+      env: process.env,
+      logger: console.log,
+    }));
+
+    const page = await browser.newPage({ acceptDownloads: true });
+    const consoleErrors = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") {
+        consoleErrors.push(message.text());
+      }
+    });
+    page.on("pageerror", (error) => {
+      consoleErrors.push(error.message);
+    });
+
+    await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204, body: "" }));
     await waitForServer();
     await page.goto(baseUrl, { waitUntil: "networkidle" });
 
     await expectText(page, "Tus datos no se almacenan en esta versión.");
     await page.getByRole("button", { name: "Comenzar" }).click();
-    await page.getByLabel("Currículum").fill(cvText);
+    await page.getByRole("textbox", { name: "Currículum" }).fill(cvText);
     await expectText(page, `${cvText.length} caracteres`);
     await page.getByRole("button", { name: "Continuar" }).click();
 
-    await page.getByLabel("Oferta laboral").fill(offerText);
+    await page.getByRole("textbox", { name: "Oferta laboral" }).fill(offerText);
     await expectText(page, `${offerText.length} caracteres`);
     await page.getByRole("button", { name: "Continuar" }).click();
 
     await page.getByRole("button", { name: "Ejecutar análisis determinista" }).click();
-    await expectText(page, "Docker");
     await expectText(page, "No cubiertos");
     await page.getByRole("button", { name: "Continuar" }).click();
+    await expectText(page, "Docker");
     await expectText(page, "No hay evidencia en el currículum.");
     await page.getByRole("button", { name: "Continuar" }).click();
 
@@ -119,14 +130,18 @@ async function run() {
       await firstTextarea.fill(`${originalProposal}\n# Markdown`);
       await expectText(page, "rechazada");
       await page.getByRole("button", { name: "Restaurar propuesta" }).first().click();
-      await page.getByLabel("Aceptar").first().check();
+      const rejectOptions = page.getByLabel("Rechazar");
+      const rejectCount = await rejectOptions.count();
+      for (let index = 0; index < rejectCount; index += 1) {
+        await rejectOptions.nth(index).check();
+      }
       await page.getByRole("button", { name: "Aplicar decisiones aprobadas" }).click();
     }
 
     await page.getByRole("button", { name: "Continuar" }).click();
-    await expectText(page, "Desarrollador de software");
+    await expectText(page, "Rechazadas");
     await page.getByRole("button", { name: "Anterior" }).click();
-    await expectText(page, "Desarrollador de software");
+    await expectText(page, "Decisión humana");
     await page.getByRole("button", { name: "Continuar" }).click();
     await page.getByRole("button", { name: "Continuar" }).click();
 
@@ -159,16 +174,8 @@ async function run() {
       throw new Error(`CONSOLE_ERRORS\n${consoleErrors.join("\n")}`);
     }
   } finally {
-    await browser.close();
+    await browser?.close();
     await rm(downloadDir, { recursive: true, force: true });
-  }
-}
-
-async function assertChromiumInstalled() {
-  try {
-    await access(chromium.executablePath());
-  } catch {
-    throw new Error("PLAYWRIGHT_CHROMIUM_NOT_INSTALLED: run npx playwright install chromium");
   }
 }
 
@@ -179,5 +186,19 @@ async function expectText(page, text) {
 try {
   await run();
 } finally {
-  server.kill();
+  stopServer();
+}
+
+function stopServer() {
+  if (server.pid === undefined) {
+    return;
+  }
+  if (process.platform === "win32") {
+    spawnSync("taskkill", ["/pid", String(server.pid), "/t", "/f"], {
+      stdio: "ignore",
+      windowsHide: true,
+    });
+    return;
+  }
+  server.kill("SIGTERM");
 }
