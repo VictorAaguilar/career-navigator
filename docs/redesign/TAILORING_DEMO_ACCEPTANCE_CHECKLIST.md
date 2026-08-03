@@ -134,6 +134,9 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] `npm run web:e2e:targeting:headed` abre el navegador elegido y completa el flujo de trazabilidad.
 - [ ] `npm run web:e2e:rc` pasa contra `vite preview`.
 - [ ] `npm run web:e2e:rc:headed` abre el navegador elegido y completa el flujo RC.
+- [ ] `npm run web:build:pages` genera `index.html` con `/career-navigator/assets/...`.
+- [ ] `npm run web:e2e:pages` pasa contra preview local bajo `/career-navigator/`.
+- [ ] `npm run web:pages:artifact-check` confirma que solo se publica `apps/web/dist`.
 - [ ] `npm run release:check` pasa tras `npm ci`.
 - [ ] El fallback automático intenta `chromium`, luego `chrome`, luego `msedge`.
 - [ ] `PLAYWRIGHT_BROWSER_CHANNEL` acepta únicamente `chromium`, `chrome` o `msedge`.
@@ -152,6 +155,8 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] `docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md` describe instalación, validación y limpieza.
 - [ ] `docs/redesign/RELEASE_CANDIDATE_READINESS.md` describe estados aprobados, pendientes y fuera de alcance.
 - [ ] `docs/redesign/RELEASE_NOTES_RC1.md` lista garantías, limitaciones y riesgos pendientes.
+- [ ] `docs/redesign/GITHUB_PAGES_DEPLOYMENT.md` describe activación manual, workflow y diagnóstico.
+- [ ] `docs/redesign/GITHUB_PAGES_ROLLBACK.md` describe rollback sin force push ni subida manual de `dist`.
 
 Si falta Chromium completo en Windows, instálalo con:
 

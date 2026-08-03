@@ -29,7 +29,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 | Teclado | Aprobado con limitaciones | `npm run web:e2e:rc` cubre avance básico por teclado | No sustituye auditoría completa WCAG. |
 | Privacidad local | Aprobado | E2E bloquea requests externos; tests buscan storage/red | El usuario debe cerrar o limpiar la pestaña para descartar estado en memoria. |
 | Seguridad de dependencias de producción | Aprobado | `npm audit --omit=dev` | Vulnerabilidades dev conocidas no forman parte del paquete de producción. |
-| Despliegue público | Pendiente | No hay infraestructura en este incremento | Requiere decisión posterior. |
+| GitHub Pages | Pendiente | Workflow y validación local preparados; falta merge a `universal-redesign`, activación manual de Pages y public smoke real | No se marca desplegado desde la rama feature. |
 
 ## Criterios Aprobados
 
@@ -40,6 +40,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 - `npm run web:bundle:check` verifica presupuestos y carga diferida de chunks pesados.
 - `npm audit --omit=dev` muestra cero vulnerabilidades de producción.
 - `npm run web:e2e:rc` valida el flujo end-to-end sobre `vite preview`.
+- `npm run web:e2e:pages` valida localmente el build con base `/career-navigator/`.
 - El DOCX descargado no contiene IDs técnicos ni metadatos de trazabilidad de UI.
 
 ## Limitaciones Conocidas
@@ -51,7 +52,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 - No hay llamadas LLM ni generación libre de texto.
 - No hay soporte declarado para Firefox o Safari en RC1.
 - No hay garantía de compatibilidad con todos los lectores DOCX.
-- No hay despliegue cloud ni pipeline de release público.
+- GitHub Pages queda preparado, pero no desplegado durante el desarrollo en rama feature.
 
 ## Decisión Recomendada
 

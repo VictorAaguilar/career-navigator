@@ -36,6 +36,12 @@ Production build:
 npm.cmd run web:build
 ```
 
+GitHub Pages production build:
+
+```powershell
+npm.cmd run web:build:pages
+```
+
 Preview production build:
 
 ```powershell
@@ -54,6 +60,8 @@ npm.cmd run typecheck
 npm.cmd run web:typecheck
 npm.cmd run web:build
 npm.cmd run web:bundle:check
+npm.cmd run web:build:pages
+npm.cmd run web:pages:artifact-check
 npm.cmd audit --omit=dev
 ```
 
@@ -66,6 +74,7 @@ npm.cmd run web:e2e:import
 npm.cmd run web:e2e:structure
 npm.cmd run web:e2e:targeting
 npm.cmd run web:e2e:rc
+npm.cmd run web:e2e:pages
 npm.cmd run web:e2e:rc:headed
 Remove-Item Env:PLAYWRIGHT_BROWSER_CHANNEL -ErrorAction SilentlyContinue
 ```
@@ -114,6 +123,7 @@ Validation status for this RC environment:
 
 - Dev E2E: `5174`, `5177`
 - Release Candidate preview E2E: `4178`
+- GitHub Pages local preview E2E: `4179`
 
 If a port is occupied, stop the existing Vite or Vite Preview process and rerun the command.
 
@@ -150,3 +160,9 @@ Bundle budget failure:
 - Do not raise budgets first.
 - Check whether a heavy chunk became an initial asset.
 - Confirm `pdf.worker`, PDF.js, JSZip and DOCX remain deferred.
+
+GitHub Pages asset 404:
+
+- Confirm `CAREER_NAVIGATOR_BASE_PATH=/career-navigator/`.
+- Confirm `index.html` references `/career-navigator/assets/...`.
+- Confirm `npm.cmd run web:pages:artifact-check` passes.
