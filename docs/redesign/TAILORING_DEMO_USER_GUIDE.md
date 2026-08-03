@@ -268,6 +268,20 @@ La validación agregada de RC se ejecuta con:
 npm run release:check
 ```
 
+El build local equivalente a GitHub Pages se prueba con:
+
+```bash
+npm run web:build:pages
+npm run web:e2e:pages
+npm run web:pages:artifact-check
+```
+
+La URL pública esperada, una vez hecho merge a `universal-redesign` y activado Pages manualmente, es:
+
+```text
+https://victoraaguilar.github.io/career-navigator/
+```
+
 Los scripts levantan Vite o Vite Preview en puertos locales, usan datos sintéticos, descargan el DOCX en un directorio temporal del sistema y eliminan ese directorio al terminar.
 
 El E2E intenta canales de Playwright en este orden: `chromium`, `chrome`, `msedge`. No requiere `chromium-headless-shell`.

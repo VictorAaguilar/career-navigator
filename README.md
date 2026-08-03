@@ -132,6 +132,21 @@ npm.cmd run release:check
 
 Detailed validation, browser-channel notes and production-preview instructions are documented in [docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md](docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md). Release readiness and known limitations are tracked in [docs/redesign/RELEASE_CANDIDATE_READINESS.md](docs/redesign/RELEASE_CANDIDATE_READINESS.md) and [docs/redesign/RELEASE_NOTES_RC1.md](docs/redesign/RELEASE_NOTES_RC1.md).
 
+Expected GitHub Pages test URL, pending merge and manual Pages activation:
+
+```text
+https://victoraaguilar.github.io/career-navigator/
+```
+
+Build and validate the Pages artifact locally with:
+
+```bash
+npm run web:build:pages
+npm run web:e2e:pages
+```
+
+Deployment setup and rollback are documented in [docs/redesign/GITHUB_PAGES_DEPLOYMENT.md](docs/redesign/GITHUB_PAGES_DEPLOYMENT.md) and [docs/redesign/GITHUB_PAGES_ROLLBACK.md](docs/redesign/GITHUB_PAGES_ROLLBACK.md). Use fictitious data while evaluating the public RC.
+
 ## Features
 
 | Feature                  | Description                                                                                                                              |

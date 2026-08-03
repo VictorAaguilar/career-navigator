@@ -17,6 +17,7 @@ RC1 estabiliza el MVP local del CV Tailoring Agent para revisión end-to-end ant
 - Descarga local de `curriculum-adaptado.docx`.
 - Runner E2E RC sobre build de producción con `vite preview`.
 - Presupuesto automatizado de bundle inicial.
+- Preparación de despliegue estático en GitHub Pages con base `/career-navigator/`, pendiente de merge y activación manual.
 
 ## Garantías De Privacidad
 
@@ -48,6 +49,14 @@ Remove-Item Env:PLAYWRIGHT_BROWSER_CHANNEL -ErrorAction SilentlyContinue
 
 `release:check` ejecuta tests unitarios, typecheck raíz, typecheck web, build web, bundle check, audit de producción y E2E RC.
 
+Validación Pages local:
+
+```bash
+npm run web:build:pages
+npm run web:e2e:pages
+npm run web:pages:artifact-check
+```
+
 ## Navegadores
 
 - Chrome: aprobado para RC1.
@@ -61,6 +70,7 @@ El E2E usa canales Playwright (`chromium`, `chrome`, `msedge`) y no requiere `ch
 ## Limitaciones
 
 - No es un despliegue público.
+- GitHub Pages aún requiere merge a `universal-redesign` y activación manual en Settings.
 - No hay backend, login, almacenamiento ni sincronización.
 - No hay OCR.
 - No hay importación de ofertas desde archivo.
