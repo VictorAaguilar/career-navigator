@@ -4,7 +4,7 @@ import { validateTextForStage } from "../../app/tailoring-demo-state";
 import {
   getResumeImportErrorMessage,
   getResumeImportWarningMessage,
-} from "../../app/resume-file-import";
+} from "../../app/resume-file-import-contract";
 import type { StageComponentProps } from "./stage-types";
 import { TextInputStage } from "./TextInputStage";
 

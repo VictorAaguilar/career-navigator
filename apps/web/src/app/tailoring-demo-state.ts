@@ -4,7 +4,7 @@ import type {
   ResumeImportErrorCode,
   ResumeImportSource,
   ResumeImportWarningCode,
-} from "./resume-file-import.js";
+} from "./resume-file-import-contract.js";
 import { createTailoringSession, type TailoringSession } from "./tailoring-session.js";
 import { tailoringSessionReducer } from "./tailoring-session-reducer.js";
 import type { WorkflowStageId } from "./workflow-stages.js";
