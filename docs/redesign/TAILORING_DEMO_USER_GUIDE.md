@@ -15,9 +15,12 @@ La demo permite:
 - pegar texto de oferta laboral;
 - ejecutar un análisis determinista local;
 - revisar requisitos y evidencias encontradas;
+- ver la ubicación de cada evidencia en el currículum;
 - comparar propuestas sugeridas;
+- ver qué bloque del currículum es objetivo de cada propuesta;
 - aprobar, rechazar o editar propuestas;
 - generar una vista previa;
+- revisar qué cambios aprobados se aplicaron y cuáles no;
 - descargar un DOCX desde el navegador.
 
 La demo no permite todavía:
@@ -135,6 +138,38 @@ Si no hay propuestas aplicables, la vista previa se genera sin cambios.
 
 Si una edición contiene un patrón rechazado por la validación, no puede aprobarse.
 
+## Ubicaciones Y Trazabilidad
+
+La demo muestra explicaciones deterministas para ayudar a revisar el análisis:
+
+- `Ubicación de la evidencia`: indica en qué sección y bloque se encontró la evidencia que respalda un requisito.
+- `Ubicación objetivo`: indica qué bloque sería modificado por una propuesta.
+- `Por qué se propone aquí`: muestra motivos derivados del targeting determinista, no texto generado.
+- `Cambios aplicados`: lista los cambios aprobados que terminaron en la vista previa.
+- `Cambios no aplicados`: lista propuestas rechazadas o con cambios solicitados cuando corresponde.
+
+En modo estructurado, las ubicaciones usan secciones revisadas como:
+
+```text
+Experiencia · bloque 2
+Habilidades · bloque 1
+Otra sección: Publicaciones · bloque 1
+```
+
+`Sección` es la categoría revisada del currículum. `Bloque` es la posición de la línea o párrafo dentro de esa sección, contando también el encabezado cuando forma parte del documento revisado.
+
+En modo de texto plano, la demo no conoce categorías reales. Por eso muestra ubicaciones aproximadas:
+
+```text
+Texto del currículum · párrafo 3
+```
+
+Una ubicación aproximada significa que el bloque procede del parser plano. Debe revisarse antes de aceptar un cambio.
+
+`Ubicación no disponible` significa que no existe un enlace seguro entre evidencia, target y bloque del `ResumeDocument` vigente. En ese caso no se elige un bloque arbitrario.
+
+Las ubicaciones no modifican la puntuación, el estado `Cubierto`/`Parcial`/`No cubierto`, la validación anti-invención, las decisiones humanas, la vista previa ni el DOCX. Tampoco garantizan contratación ni preferencia del reclutador; solo explican el rastro técnico de la demo.
+
 ## Privacidad
 
 La interfaz muestra el aviso:
@@ -183,7 +218,19 @@ Y en modo visible:
 npm run web:e2e:structure:headed
 ```
 
-El script levanta Vite en `127.0.0.1:5174`, usa datos sintéticos, descarga el DOCX en un directorio temporal del sistema y elimina ese directorio al terminar.
+El flujo de ubicaciones y trazabilidad se prueba con:
+
+```bash
+npm run web:e2e:targeting
+```
+
+Y en modo visible:
+
+```bash
+npm run web:e2e:targeting:headed
+```
+
+Los scripts levantan Vite en puertos locales, usan datos sintéticos, descargan el DOCX en un directorio temporal del sistema y eliminan ese directorio al terminar.
 
 El E2E intenta canales de Playwright en este orden: `chromium`, `chrome`, `msedge`. No requiere `chromium-headless-shell`.
 

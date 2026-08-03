@@ -57,25 +57,40 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] Una oferta con requisitos concretos genera resultados revisables. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
 - [ ] Una oferta sin requisitos extraíbles muestra un error seguro. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
 - [ ] Un requisito no cubierto no genera evidencia positiva. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e:structure`.
+- [ ] Un requisito no cubierto muestra `No se encontró evidencia en el currículum.` sin ubicación inventada. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
 - [ ] Un requisito desconocido no genera afirmaciones positivas. Automatizado: `tests/unit/tailoring.test.ts`.
 - [ ] El orden de resultados es estable. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] Scoring no cambia por mera existencia de estructura. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] Las ubicaciones de evidencia estructurada muestran sección y bloque. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
+- [ ] Las ubicaciones de evidencia en `Otra` muestran encabezado seguro cuando existe. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`.
+- [ ] Las ubicaciones de texto plano muestran párrafo y advertencia aproximada. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`.
+- [ ] Las explicaciones de ubicación no modifican scoring ni matching. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`.
 
 ## Propuestas Y Revisión
 
 - [ ] Las propuestas muestran texto original y texto sugerido. Automatizado: `npm run web:e2e`.
+- [ ] Las propuestas muestran `Ubicación objetivo`. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
+- [ ] Las propuestas muestran `Por qué se propone aquí`. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
+- [ ] Los targets exactos se explican desde evidencia y resolución existente. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`.
+- [ ] Los targets aproximados muestran advertencia en modo plano. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`.
+- [ ] Los targets no resueltos no eligen un bloque arbitrario. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`.
 - [ ] Cada propuesta puede aprobarse, rechazarse o editarse. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] Una edición inválida muestra revisión o rechazo. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] Una edición rechazada no puede aprobarse. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] Una propuesta editada y aceptada conserva el mismo target. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`.
+- [ ] Una propuesta rechazada no figura como aplicada. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
 - [ ] Si no hay propuestas aplicables, se puede generar vista previa sin cambios. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
 - [ ] Si todas las propuestas se rechazan, la vista previa conserva el texto original. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 
 ## Vista Previa Y DOCX
 
 - [ ] La vista previa muestra el currículum resultante. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
+- [ ] La vista previa muestra cambios aplicados con ubicación y requisito relacionado. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
+- [ ] La vista previa separa cambios no aplicados de cambios aplicados. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
 - [ ] El botón de descarga solo aparece cuando hay vista previa. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] La descarga usa el nombre `curriculum-adaptado.docx`. Automatizado: `npm run web:e2e`.
 - [ ] El DOCX descargado no contiene IDs internos visibles. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
+- [ ] El DOCX descargado no contiene metadata de ubicación de UI. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
 - [ ] El DOCX descargado se puede abrir con un lector compatible. Manual.
 
 ## Accesibilidad Y Responsive
@@ -86,16 +101,19 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] El panel estructural usa `fieldset`, `legend`, labels visibles y `aria-live`. Automatizado: `tests/unit/resume-file-import.test.ts`; revisión manual recomendada.
 - [ ] Las áreas editables exponen ayuda y estado de validación. Manual.
 - [ ] La interfaz es usable en 320 px, 375 px, 768 px y escritorio. Manual.
+- [ ] Las ubicaciones rompen línea y no causan scroll horizontal general en móvil. Manual.
+- [ ] Las advertencias de ubicación se entienden sin depender de color ni iconos. Automatizado parcialmente: `tests/unit/structured-targeting-explanations.test.ts`.
 
 ## Privacidad
 
-- [ ] No hay llamadas de red de producto. Automatizado: `npm run web:e2e:import`, `npm run web:e2e:structure`.
+- [ ] No hay llamadas de red de producto. Automatizado: `npm run web:e2e:import`, `npm run web:e2e:structure`, `npm run web:e2e:targeting`.
 - [ ] No hay `localStorage`. Automatizado: `tests/unit/resume-file-import.test.ts`, `tests/unit/structured-resume-parsing.test.ts`.
 - [ ] No hay `sessionStorage`. Automatizado: `tests/unit/resume-file-import.test.ts`, `tests/unit/structured-resume-parsing.test.ts`.
 - [ ] No hay cookies. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
-- [ ] No hay timestamps, UUIDs ni `Math.random` en el flujo de demo. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] No hay timestamps, UUIDs ni `Math.random` en el flujo de demo. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `tests/unit/structured-resume-parsing.test.ts`, `tests/unit/structured-targeting-explanations.test.ts`.
 - [ ] No se registran CV u oferta en consola. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e:structure`.
 - [ ] No se registran nombres de archivo ni texto importado. Automatizado: `tests/unit/resume-file-import.test.ts`.
+- [ ] No se muestran IDs técnicos como texto visible en trazabilidad. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
 
 ## Automatización
 
@@ -108,6 +126,8 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] `npm run web:e2e:import` pasa con DOCX, PDF, PDF sin texto y archivo inválido.
 - [ ] `npm run web:e2e:structure` pasa con flujo estructurado, parser plano e invalidación.
 - [ ] `npm run web:e2e:structure:headed` abre el navegador elegido y completa el flujo estructurado.
+- [ ] `npm run web:e2e:targeting` pasa con flujo estructurado, trazabilidad y DOCX.
+- [ ] `npm run web:e2e:targeting:headed` abre el navegador elegido y completa el flujo de trazabilidad.
 - [ ] El fallback automático intenta `chromium`, luego `chrome`, luego `msedge`.
 - [ ] `PLAYWRIGHT_BROWSER_CHANNEL` acepta únicamente `chromium`, `chrome` o `msedge`.
 - [ ] El E2E informa el canal usado con `E2E_BROWSER_CHANNEL=<canal>`.
