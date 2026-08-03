@@ -31,7 +31,9 @@
     "web:build": "npm run build --workspace @career-navigator/web",
     "web:typecheck": "npm run typecheck --workspace @career-navigator/web",
     "web:e2e": "node tests/e2e/tailoring-demo-flow.mjs",
-    "web:e2e:headed": "node tests/e2e/tailoring-demo-flow.mjs --headed"
+    "web:e2e:headed": "node tests/e2e/tailoring-demo-flow.mjs --headed",
+    "web:e2e:import": "node tests/e2e/resume-file-import-flow.mjs",
+    "web:e2e:import:headed": "node tests/e2e/resume-file-import-flow.mjs --headed"
   },
   "keywords": [
     "ai",
