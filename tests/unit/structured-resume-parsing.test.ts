@@ -233,4 +233,3 @@ describe("structured resume parsing", () => {
     expect(source).not.toMatch(/OpenAI|Anthropic|Gemini|console\.log|C:[\\/]|AppData/);
   });
 });
-

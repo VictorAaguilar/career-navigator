@@ -313,4 +313,3 @@ Usan `PLAYWRIGHT_BROWSER_CHANNEL` y el fallback existente `chromium -> chrome ->
 - No reordena secciones.
 - No procesa PDFs escaneados.
 - Encabezados ambiguos se conservan como `other` o requieren revisión humana.
-
