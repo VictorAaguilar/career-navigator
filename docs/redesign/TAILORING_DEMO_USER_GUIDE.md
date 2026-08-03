@@ -9,6 +9,9 @@ La demo permite:
 - pegar texto de currículum;
 - importar un currículum DOCX;
 - importar un PDF con texto seleccionable;
+- detectar una estructura revisable del currículum;
+- cambiar la categoría de secciones detectadas;
+- confirmar estructura o continuar con análisis de texto plano;
 - pegar texto de oferta laboral;
 - ejecutar un análisis determinista local;
 - revisar requisitos y evidencias encontradas;
@@ -51,19 +54,59 @@ http://localhost:5173/
 
 1. Pulsa `Comenzar`.
 2. Pega el texto del currículum o importa un DOCX/PDF en la etapa `Currículum`.
-3. Pega el texto de la oferta laboral.
-4. Ejecuta el análisis determinista.
-5. Revisa requisitos y evidencias.
-6. Revisa las propuestas.
-7. Aprueba, rechaza o edita cada propuesta.
-8. Genera la vista previa.
-9. Descarga el DOCX.
+3. Pulsa `Detectar estructura`.
+4. Revisa las secciones detectadas.
+5. Cambia `Tipo de sección` si una categoría no es correcta.
+6. Pulsa `Confirmar estructura` o `Usar análisis de texto plano`.
+7. Pega el texto de la oferta laboral.
+8. Ejecuta el análisis determinista.
+9. Revisa requisitos y evidencias.
+10. Revisa las propuestas.
+11. Aprueba, rechaza o edita cada propuesta.
+12. Genera la vista previa.
+13. Descarga el DOCX.
+
+## Revisión Estructural
+
+La detección estructural agrupa líneas existentes del currículum. No crea cargos, empresas, fechas, habilidades, certificaciones ni texto nuevo.
+
+Categorías reconocidas:
+
+- Contacto
+- Perfil profesional
+- Experiencia
+- Formación
+- Habilidades
+- Idiomas
+- Certificaciones
+- Proyectos
+- Otra
+
+La confianza visible puede ser:
+
+- `Confianza alta`: encabezado conocido detectado de forma directa.
+- `Confianza media`: variante segura de un encabezado conocido.
+- `Confianza baja`: encabezado desconocido o sección que requiere revisión.
+
+La confianza no es una certeza factual. Solo indica cuán conservadora fue la detección del encabezado.
+
+El textarea sigue siendo el único editor del contenido. Las tarjetas permiten cambiar categorías, no editar texto duplicado.
+
+Si necesitas corregir contenido, edita el textarea. Al editar, la estructura confirmada se invalida y debes detectar de nuevo o elegir texto plano.
+
+Si no hay encabezados seguros, la demo muestra una advertencia y permite usar el parser plano anterior.
+
+Las secciones desconocidas se conservan como `Otra`. Las secciones repetidas se conservan separadas y en orden.
 
 ## Casos Esperados
 
 Si el currículum está vacío, la demo no avanza desde la etapa de currículum.
 
+No se puede avanzar desde `Currículum` hasta confirmar una estructura o elegir explícitamente `Usar análisis de texto plano`.
+
 Si importas un archivo, el texto extraído aparece en el mismo textarea. Debes revisarlo y corregirlo antes de continuar.
+
+Importar otro archivo invalida cualquier estructura detectada o confirmada previamente.
 
 El formato visual del archivo no se conserva. La demo extrae texto, párrafos y señales básicas; no replica columnas, colores, imágenes ni diseño exacto.
 
@@ -128,6 +171,18 @@ Y en modo visible:
 npm run web:e2e:import:headed
 ```
 
+El flujo de revisión estructural se prueba con:
+
+```bash
+npm run web:e2e:structure
+```
+
+Y en modo visible:
+
+```bash
+npm run web:e2e:structure:headed
+```
+
 El script levanta Vite en `127.0.0.1:5174`, usa datos sintéticos, descarga el DOCX en un directorio temporal del sistema y elimina ese directorio al terminar.
 
 El E2E intenta canales de Playwright en este orden: `chromium`, `chrome`, `msedge`. No requiere `chromium-headless-shell`.
@@ -149,3 +204,4 @@ npx.cmd --no-install playwright install --no-shell chromium
 ```
 
 Como alternativa, instala Google Chrome o Microsoft Edge y selecciona `chrome` o `msedge` con `PLAYWRIGHT_BROWSER_CHANNEL`.
+
