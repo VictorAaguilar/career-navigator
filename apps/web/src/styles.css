@@ -65,7 +65,8 @@ button:disabled {
 }
 
 button:focus-visible,
-.stepper-item:focus-visible {
+.stepper-item:focus-visible,
+select:focus-visible {
   outline: 3px solid rgb(35 100 90 / 32%);
   outline-offset: 3px;
 }
@@ -402,6 +403,115 @@ button:focus-visible,
   line-height: 1.55;
 }
 
+.resume-structure-panel {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: #ffffff;
+}
+
+.structure-panel-heading,
+.structure-card-header,
+.confirmed-structure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.resume-structure-panel h3,
+.structure-card h4 {
+  margin: 0 0 var(--space-1);
+  font-size: 1.05rem;
+}
+
+.structure-summary {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface-muted);
+  color: var(--color-accent-strong);
+  font-weight: 800;
+}
+
+.structure-review {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+.structure-review legend {
+  font-weight: 900;
+}
+
+.structure-card-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.structure-card {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-muted);
+}
+
+.structure-card label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: min(100%, 14rem);
+  font-weight: 900;
+}
+
+.structure-card select {
+  width: 100%;
+  min-height: 2.55rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  background: #ffffff;
+  color: var(--color-text);
+  font: inherit;
+}
+
+.structure-warning-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #6c4f13;
+  line-height: 1.55;
+}
+
+.structure-excerpt,
+.plain-parser-note {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.confirmed-structure {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid #b8d8c3;
+  border-radius: 6px;
+  background: #edf8f0;
+  color: #1d5b39;
+}
+
+.structure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .intro-band {
   display: flex;
   gap: var(--space-3);
@@ -682,7 +792,9 @@ button:focus-visible,
     flex-direction: column-reverse;
   }
 
-  .workflow-navigation button {
+  .workflow-navigation button,
+  .structure-actions button,
+  .structure-panel-heading button {
     width: 100%;
   }
 }

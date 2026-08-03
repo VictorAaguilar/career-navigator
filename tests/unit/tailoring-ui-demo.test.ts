@@ -86,6 +86,7 @@ describe("Tailoring UI demo MVP", () => {
     expect(getStageGuardMessage(state)).toContain("currículum");
 
     state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+    state = tailoringDemoReducer(state, { type: "use_plain_resume_parser" });
     state = advance(state);
     expect(state.session.currentStageId).toBe("job");
 
@@ -99,6 +100,7 @@ describe("Tailoring UI demo MVP", () => {
   it("invalidates derived results when resume or job changes", () => {
     let state = createTailoringDemoState();
     state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+    state = tailoringDemoReducer(state, { type: "use_plain_resume_parser" });
     state = tailoringDemoReducer(state, { type: "set_job_text", value: jobText });
     state = tailoringDemoReducer(state, { type: "run_analysis" });
     expect(state.analysis).not.toBeNull();
@@ -112,12 +114,90 @@ describe("Tailoring UI demo MVP", () => {
     expect(state.docx.status).toBe("idle");
   });
 
+  it("requires an explicit structured or plain parsing mode before leaving resume", () => {
+    let state = advance();
+    state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+
+    state = advance(state);
+    expect(state.session.currentStageId).toBe("resume");
+    expect(getStageGuardMessage(state)).toContain("estructura");
+
+    state = tailoringDemoReducer(state, { type: "detect_resume_structure" });
+    expect(state.resumeStructure.status).toBe("detected");
+    state = advance(state);
+    expect(state.session.currentStageId).toBe("resume");
+    expect(getStageGuardMessage(state)).toContain("Confirma");
+
+    state = tailoringDemoReducer(state, { type: "confirm_resume_structure" });
+    state = advance(state);
+    expect(state.session.currentStageId).toBe("job");
+  });
+
+  it("runs analysis with the confirmed structured ResumeDocument and keeps plain mode explicit", () => {
+    const structured = [
+      "PERFIL PROFESIONAL",
+      "Profesional con experiencia en desarrollo web.",
+      "EXPERIENCIA",
+      "- Desarrollo de aplicaciones con TypeScript y React.",
+      "HABILIDADES",
+      "Vitest",
+    ].join("\n");
+    let structuredState = createTailoringDemoState();
+    structuredState = tailoringDemoReducer(structuredState, { type: "set_resume_text", value: structured });
+    structuredState = tailoringDemoReducer(structuredState, { type: "detect_resume_structure" });
+    structuredState = tailoringDemoReducer(structuredState, { type: "confirm_resume_structure" });
+    structuredState = tailoringDemoReducer(structuredState, { type: "set_job_text", value: jobText });
+    structuredState = tailoringDemoReducer(structuredState, { type: "run_analysis" });
+
+    expect(structuredState.analysis).not.toBeNull();
+    expect(structuredState.analysis.parsedResume.resumeDocument.sections.map((section: any) => section.kind)).toEqual([
+      "summary",
+      "experience",
+      "skills",
+    ]);
+    expect(structuredState.analysis.targetingResult.documentId).toBe(
+      structuredState.analysis.parsedResume.resumeDocument.documentId,
+    );
+
+    let plainState = createTailoringDemoState();
+    plainState = tailoringDemoReducer(plainState, { type: "set_resume_text", value: structured });
+    plainState = tailoringDemoReducer(plainState, { type: "use_plain_resume_parser" });
+    plainState = tailoringDemoReducer(plainState, { type: "set_job_text", value: jobText });
+    plainState = tailoringDemoReducer(plainState, { type: "run_analysis" });
+
+    expect(plainState.resumeStructure.mode).toBe("plain");
+    expect(plainState.analysis.parsedResume.resumeDocument.sections).toHaveLength(1);
+    expect(plainState.analysis.scoringResult.score).toBe(structuredState.analysis.scoringResult.score);
+  });
+
+  it("invalidates confirmed structure when text or section kind changes, but preserves it when navigating back", () => {
+    let state = createTailoringDemoState();
+    state = advance(state);
+    state = tailoringDemoReducer(state, { type: "set_resume_text", value: "EXPERIENCIA\nReact" });
+    state = tailoringDemoReducer(state, { type: "detect_resume_structure" });
+    state = tailoringDemoReducer(state, { type: "confirm_resume_structure" });
+    state = advance(state);
+    state = tailoringDemoReducer(state, { type: "navigate", direction: "back" });
+
+    expect(state.resumeStructure.status).toBe("confirmed");
+    expect(state.session.currentStageId).toBe("resume");
+
+    state = tailoringDemoReducer(state, { type: "set_resume_section_kind", sectionId: "section-000", kind: "skills" });
+    expect(state.resumeStructure.status).toBe("detected");
+    expect(state.analysis).toBeNull();
+
+    state = tailoringDemoReducer(state, { type: "confirm_resume_structure" });
+    state = tailoringDemoReducer(state, { type: "set_resume_text", value: "EXPERIENCIA\nReact\nVitest" });
+    expect(state.resumeStructure.status).toBe("idle");
+  });
+
   it("preserves input while navigating backward and reset clears all demo data", () => {
     let state = createTailoringDemoState();
+    state = advance(state);
     state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+    state = tailoringDemoReducer(state, { type: "use_plain_resume_parser" });
     state = advance(state);
     state = tailoringDemoReducer(state, { type: "set_job_text", value: jobText });
-    state = advance(state);
     state = tailoringDemoReducer(state, { type: "navigate", direction: "back" });
 
     expect(state.session.currentStageId).toBe("resume");
@@ -212,6 +292,7 @@ describe("Tailoring UI demo MVP", () => {
   it("restores deterministic proposal text after an edit", () => {
     let state = createTailoringDemoState();
     state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+    state = tailoringDemoReducer(state, { type: "use_plain_resume_parser" });
     state = tailoringDemoReducer(state, { type: "set_job_text", value: jobText });
     state = tailoringDemoReducer(state, { type: "run_analysis" });
     const proposal = state.analysis.proposalRows[0];
@@ -230,6 +311,7 @@ describe("Tailoring UI demo MVP", () => {
   it("does not allow approving a candidate rejected by validation", () => {
     let state = createTailoringDemoState();
     state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+    state = tailoringDemoReducer(state, { type: "use_plain_resume_parser" });
     state = tailoringDemoReducer(state, { type: "set_job_text", value: jobText });
     state = tailoringDemoReducer(state, { type: "run_analysis" });
     const proposal = state.analysis.proposalRows[0];
