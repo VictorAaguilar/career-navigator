@@ -8,6 +8,10 @@ export function StartStage({ onStart }: { onStart: () => void }) {
             Pega un currículum y una oferta, revisa requisitos, decide cada propuesta y descarga
             un DOCX. Todo sucede en memoria durante esta sesión.
           </p>
+          <p>
+            Versión candidata pública de prueba: utiliza datos ficticios para evaluarla. Los
+            archivos se procesan localmente en el navegador y no existe persistencia.
+          </p>
         </div>
         <button type="button" className="primary-action" onClick={onStart}>
           Comenzar
