@@ -309,6 +309,7 @@ describe("local resume file import", () => {
 
   it("keeps import modules free of storage, network, OCR, LLM, logs, timestamps and local paths", () => {
     const source = [
+      "apps/web/src/app/resume-file-import-contract.ts",
       "apps/web/src/app/resume-file-import.ts",
       "apps/web/src/app/use-tailoring-demo-controller.ts",
       "apps/web/src/app/tailoring-demo-state.ts",

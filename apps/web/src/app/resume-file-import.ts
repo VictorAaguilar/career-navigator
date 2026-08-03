@@ -1,38 +1,28 @@
 import JSZip from "jszip";
+import {
+  ResumeImportError as ResumeImportErrorClass,
+  ResumeImportErrorCode as ResumeImportErrorCodes,
+  ResumeImportWarningCode as ResumeImportWarningCodes,
+  type ResumeImportSource,
+  type ResumeImportWarningCode as ResumeImportWarningCodeType,
+} from "./resume-file-import-contract";
 import { TAILORING_DEMO_LIMITS } from "./tailoring-demo-limits";
 
-export const ResumeImportErrorCode = {
-  FileRequired: "RESUME_IMPORT_FILE_REQUIRED",
-  FileTooLarge: "RESUME_IMPORT_FILE_TOO_LARGE",
-  TypeUnsupported: "RESUME_IMPORT_TYPE_UNSUPPORTED",
-  SignatureInvalid: "RESUME_IMPORT_SIGNATURE_INVALID",
-  DocxInvalid: "RESUME_IMPORT_DOCX_INVALID",
-  DocxTooComplex: "RESUME_IMPORT_DOCX_TOO_COMPLEX",
-  PdfInvalid: "RESUME_IMPORT_PDF_INVALID",
-  PdfPasswordProtected: "RESUME_IMPORT_PDF_PASSWORD_PROTECTED",
-  PdfTooManyPages: "RESUME_IMPORT_PDF_TOO_MANY_PAGES",
-  PdfNoText: "RESUME_IMPORT_PDF_NO_TEXT",
-  TextTooLarge: "RESUME_IMPORT_TEXT_TOO_LARGE",
-  Failed: "RESUME_IMPORT_FAILED",
-} as const;
-
-export type ResumeImportErrorCode = (typeof ResumeImportErrorCode)[keyof typeof ResumeImportErrorCode];
-
-export const ResumeImportWarningCode = {
-  TextExceedsAnalysisLimit: "RESUME_IMPORT_TEXT_EXCEEDS_ANALYSIS_LIMIT",
-  PdfLayoutOrderMayVary: "RESUME_IMPORT_PDF_LAYOUT_ORDER_MAY_VARY",
-  VisualFormattingNotPreserved: "RESUME_IMPORT_VISUAL_FORMATTING_NOT_PRESERVED",
-} as const;
-
-export type ResumeImportWarningCode =
-  (typeof ResumeImportWarningCode)[keyof typeof ResumeImportWarningCode];
-
-export type ResumeImportSource = "manual" | "docx" | "pdf";
+export {
+  getResumeImportErrorMessage,
+  getResumeImportWarningMessage,
+  ResumeImportError,
+  ResumeImportErrorCode,
+  ResumeImportWarningCode,
+} from "./resume-file-import-contract";
+export type {
+  ResumeImportSource,
+} from "./resume-file-import-contract";
 
 export type ResumeImportResult = Readonly<{
   source: Exclude<ResumeImportSource, "manual">;
   text: string;
-  warnings: readonly ResumeImportWarningCode[];
+  warnings: readonly ResumeImportWarningCodeType[];
 }>;
 
 export type ResumeImportFileLike = Readonly<{
@@ -74,27 +64,27 @@ export async function importResumeFile(file: ResumeImportFileLike): Promise<Resu
 
 export function getResumeImportSource(file: ResumeImportFileLike | null | undefined): Exclude<ResumeImportSource, "manual"> {
   if (file === null || file === undefined) {
-    throw new ResumeImportError(ResumeImportErrorCode.FileRequired);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.FileRequired);
   }
   if (file.size <= 0) {
-    throw new ResumeImportError(ResumeImportErrorCode.SignatureInvalid);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.SignatureInvalid);
   }
   if (file.size > TAILORING_DEMO_LIMITS.resumeImportFileMaxBytes) {
-    throw new ResumeImportError(ResumeImportErrorCode.FileTooLarge);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.FileTooLarge);
   }
 
   const extension = getLowercaseExtension(file.name);
   if (extension === ".doc" || extension === ".docm" || extension === ".rtf" || extension === ".txt") {
-    throw new ResumeImportError(ResumeImportErrorCode.TypeUnsupported);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.TypeUnsupported);
   }
   if (extension !== ".docx" && extension !== ".pdf") {
-    throw new ResumeImportError(ResumeImportErrorCode.TypeUnsupported);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.TypeUnsupported);
   }
   if (file.type !== "" && extension === ".docx" && file.type !== DOCX_MIME) {
-    throw new ResumeImportError(ResumeImportErrorCode.TypeUnsupported);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.TypeUnsupported);
   }
   if (file.type !== "" && extension === ".pdf" && file.type !== PDF_MIME) {
-    throw new ResumeImportError(ResumeImportErrorCode.TypeUnsupported);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.TypeUnsupported);
   }
 
   return extension === ".docx" ? "docx" : "pdf";
@@ -107,13 +97,13 @@ export async function readResumeImportBytes(
   const buffer = await file.arrayBuffer();
   const bytes = new Uint8Array(buffer);
   if (bytes.length === 0) {
-    throw new ResumeImportError(ResumeImportErrorCode.SignatureInvalid);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.SignatureInvalid);
   }
   if (source === "pdf" && !hasPdfSignature(bytes)) {
-    throw new ResumeImportError(ResumeImportErrorCode.SignatureInvalid);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.SignatureInvalid);
   }
   if (source === "docx" && !hasZipSignature(bytes)) {
-    throw new ResumeImportError(ResumeImportErrorCode.SignatureInvalid);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.SignatureInvalid);
   }
   return bytes;
 }
@@ -123,20 +113,20 @@ export async function extractDocxResumeText(bytes: Uint8Array): Promise<ResumeIm
   try {
     zip = await JSZip.loadAsync(bytes);
   } catch {
-    throw new ResumeImportError(ResumeImportErrorCode.DocxInvalid);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.DocxInvalid);
   }
 
   const entries = Object.values(zip.files).filter((entry) => !entry.dir);
   if (entries.length > TAILORING_DEMO_LIMITS.resumeImportDocxMaxEntries) {
-    throw new ResumeImportError(ResumeImportErrorCode.DocxTooComplex);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.DocxTooComplex);
   }
   if (zip.file("[Content_Types].xml") === null || zip.file("word/document.xml") === null) {
-    throw new ResumeImportError(ResumeImportErrorCode.DocxInvalid);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.DocxInvalid);
   }
 
   const xmlParts = await readDocxXmlParts(zip);
   const text = normalizeExtractedText(xmlParts.map(extractTextFromWordXml).join("\n\n"));
-  return buildImportResult("docx", text, [ResumeImportWarningCode.VisualFormattingNotPreserved]);
+  return buildImportResult("docx", text, [ResumeImportWarningCodes.VisualFormattingNotPreserved]);
 }
 
 export async function extractPdfResumeText(
@@ -147,7 +137,7 @@ export async function extractPdfResumeText(
   try {
     pdf = await pdfLoader(bytes);
     if (pdf.numPages > TAILORING_DEMO_LIMITS.resumeImportPdfMaxPages) {
-      throw new ResumeImportError(ResumeImportErrorCode.PdfTooManyPages);
+      throw new ResumeImportErrorClass(ResumeImportErrorCodes.PdfTooManyPages);
     }
 
     const pages: string[] = [];
@@ -159,57 +149,20 @@ export async function extractPdfResumeText(
 
     const text = normalizeExtractedText(pages.join("\n\n"));
     return buildImportResult("pdf", text, [
-      ResumeImportWarningCode.VisualFormattingNotPreserved,
-      ResumeImportWarningCode.PdfLayoutOrderMayVary,
+      ResumeImportWarningCodes.VisualFormattingNotPreserved,
+      ResumeImportWarningCodes.PdfLayoutOrderMayVary,
     ]);
   } catch (error) {
-    if (error instanceof ResumeImportError) {
+    if (error instanceof ResumeImportErrorClass) {
       throw error;
     }
     const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
     if (message.includes("password")) {
-      throw new ResumeImportError(ResumeImportErrorCode.PdfPasswordProtected);
+      throw new ResumeImportErrorClass(ResumeImportErrorCodes.PdfPasswordProtected);
     }
-    throw new ResumeImportError(ResumeImportErrorCode.PdfInvalid);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.PdfInvalid);
   } finally {
     await pdf?.destroy?.();
-  }
-}
-
-export function getResumeImportErrorMessage(errorCode: ResumeImportErrorCode): string {
-  const messages: Record<ResumeImportErrorCode, string> = {
-    RESUME_IMPORT_FILE_REQUIRED: "Selecciona un archivo DOCX o PDF.",
-    RESUME_IMPORT_FILE_TOO_LARGE: "El archivo supera el límite de 8 MiB.",
-    RESUME_IMPORT_TYPE_UNSUPPORTED: "Formato no compatible. Usa DOCX o PDF con texto seleccionable.",
-    RESUME_IMPORT_SIGNATURE_INVALID: "El archivo no coincide con un DOCX o PDF válido.",
-    RESUME_IMPORT_DOCX_INVALID: "No se pudo leer el DOCX. Comprueba que sea un archivo DOCX válido.",
-    RESUME_IMPORT_DOCX_TOO_COMPLEX: "El DOCX supera los límites de complejidad de esta demo.",
-    RESUME_IMPORT_PDF_INVALID: "No se pudo leer el PDF. Comprueba que no esté dañado.",
-    RESUME_IMPORT_PDF_PASSWORD_PROTECTED: "No se puede importar un PDF protegido con contraseña.",
-    RESUME_IMPORT_PDF_TOO_MANY_PAGES: "El PDF supera el límite de 50 páginas.",
-    RESUME_IMPORT_PDF_NO_TEXT: "No se encontró texto seleccionable en el PDF. Esta versión no incluye OCR. Puedes pegar el contenido manualmente o utilizar otro archivo.",
-    RESUME_IMPORT_TEXT_TOO_LARGE: "El texto extraído supera el límite de seguridad de esta demo.",
-    RESUME_IMPORT_FAILED: "No se pudo importar el archivo. Puedes seleccionar otro archivo o pegar el texto manualmente.",
-  };
-  return messages[errorCode];
-}
-
-export function getResumeImportWarningMessage(warningCode: ResumeImportWarningCode): string {
-  const messages: Record<ResumeImportWarningCode, string> = {
-    RESUME_IMPORT_TEXT_EXCEEDS_ANALYSIS_LIMIT: "El texto extraído queda editable, pero debes reducirlo por debajo de 24.000 caracteres antes de continuar.",
-    RESUME_IMPORT_PDF_LAYOUT_ORDER_MAY_VARY: "En PDFs con columnas, tablas o diseños complejos, el orden del texto puede variar.",
-    RESUME_IMPORT_VISUAL_FORMATTING_NOT_PRESERVED: "Se extrae solo el texto. El formato visual, imágenes e iconos no se conservan.",
-  };
-  return messages[warningCode];
-}
-
-export class ResumeImportError extends Error {
-  readonly code: ResumeImportErrorCode;
-
-  constructor(code: ResumeImportErrorCode) {
-    super(code);
-    this.name = "ResumeImportError";
-    this.code = code;
   }
 }
 
@@ -246,14 +199,14 @@ async function readDocxXmlParts(zip: JSZip): Promise<string[]> {
 async function readXmlEntry(zip: JSZip, path: string): Promise<string> {
   const entry = zip.file(path);
   if (entry === null) {
-    throw new ResumeImportError(ResumeImportErrorCode.DocxInvalid);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.DocxInvalid);
   }
   const xml = await entry.async("string");
   if (new Blob([xml]).size > TAILORING_DEMO_LIMITS.resumeImportDocxMaxXmlBytes) {
-    throw new ResumeImportError(ResumeImportErrorCode.DocxTooComplex);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.DocxTooComplex);
   }
   if (/<!DOCTYPE|<!ENTITY|<!\[CDATA/iu.test(xml)) {
-    throw new ResumeImportError(ResumeImportErrorCode.DocxInvalid);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.DocxInvalid);
   }
   return xml;
 }
@@ -333,17 +286,17 @@ function extractPdfPageText(items: readonly PdfTextItem[]): string {
 function buildImportResult(
   source: Exclude<ResumeImportSource, "manual">,
   text: string,
-  baseWarnings: readonly ResumeImportWarningCode[],
+  baseWarnings: readonly ResumeImportWarningCodeType[],
 ): ResumeImportResult {
   if (text.trim().length === 0) {
-    throw new ResumeImportError(source === "pdf" ? ResumeImportErrorCode.PdfNoText : ResumeImportErrorCode.DocxInvalid);
+    throw new ResumeImportErrorClass(source === "pdf" ? ResumeImportErrorCodes.PdfNoText : ResumeImportErrorCodes.DocxInvalid);
   }
   if (text.length > TAILORING_DEMO_LIMITS.resumeImportRawTextMaxLength) {
-    throw new ResumeImportError(ResumeImportErrorCode.TextTooLarge);
+    throw new ResumeImportErrorClass(ResumeImportErrorCodes.TextTooLarge);
   }
   const warnings = new Set(baseWarnings);
   if (text.length > TAILORING_DEMO_LIMITS.resumeTextMaxLength) {
-    warnings.add(ResumeImportWarningCode.TextExceedsAnalysisLimit);
+    warnings.add(ResumeImportWarningCodes.TextExceedsAnalysisLimit);
   }
   return deepFreeze({ source, text, warnings: Array.from(warnings).sort(compareStable) });
 }
