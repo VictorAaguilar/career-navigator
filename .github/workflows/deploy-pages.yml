@@ -15,7 +15,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
   PLAYWRIGHT_BROWSER_CHANNEL: chrome
   IS_DEPLOYABLE_REF: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/universal-redesign') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/universal-redesign') }}
 
@@ -23,6 +22,7 @@ jobs:
   validate-and-build:
     name: Validate and build Pages artifact
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         # v7.0.0 pinned so PR validation never follows a mutable tag.
@@ -52,24 +52,36 @@ jobs:
 
       - name: Build web for GitHub Pages
         # Pages is a project site, so production assets must live below /career-navigator/.
+        env:
+          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
         run: npm run web:build
 
       - name: Check bundle budget
+        env:
+          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
         run: npm run web:bundle:check
 
       - name: Check Pages artifact before browser smoke
+        env:
+          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
         run: npm run web:pages:artifact-check
 
       - name: Verify Chrome channel availability
         run: google-chrome --version || (echo "GITHUB_PAGES_CHROME_NOT_AVAILABLE" && exit 1)
 
       - name: Run Pages E2E against local preview
+        env:
+          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
         run: npm run web:e2e:pages
 
       - name: Re-check bundle budget after E2E build
+        env:
+          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
         run: npm run web:bundle:check
 
       - name: Re-check Pages artifact after E2E build
+        env:
+          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
         run: npm run web:pages:artifact-check
 
       - name: Audit production dependencies
@@ -98,15 +110,19 @@ jobs:
     if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/universal-redesign') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/universal-redesign') }}
     needs: validate-and-build
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       pages: write
       id-token: write
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     outputs:
       page_url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Deploy to GitHub Pages
         # v5.0.0 pinned. Elevated Pages permissions are isolated to this job.
@@ -118,8 +134,10 @@ jobs:
     if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/universal-redesign') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/universal-redesign') }}
     needs: deploy
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
+
     steps:
       - name: Checkout smoke runner
         # v7.0.0 pinned so the smoke script comes from the deployed commit.
