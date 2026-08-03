@@ -204,4 +204,3 @@ npx.cmd --no-install playwright install --no-shell chromium
 ```
 
 Como alternativa, instala Google Chrome o Microsoft Edge y selecciona `chrome` o `msedge` con `PLAYWRIGHT_BROWSER_CHANNEL`.
-
