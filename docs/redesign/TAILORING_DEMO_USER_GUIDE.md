@@ -96,3 +96,23 @@ npm run web:e2e:headed
 ```
 
 El script levanta Vite en `127.0.0.1:5174`, usa datos sintéticos, descarga el DOCX en un directorio temporal del sistema y elimina ese directorio al terminar.
+
+El E2E intenta canales de Playwright en este orden: `chromium`, `chrome`, `msedge`. No requiere `chromium-headless-shell`.
+
+Para forzar un canal concreto en PowerShell:
+
+```powershell
+$env:PLAYWRIGHT_BROWSER_CHANNEL="chrome"
+npm.cmd run web:e2e
+Remove-Item Env:PLAYWRIGHT_BROWSER_CHANNEL -ErrorAction SilentlyContinue
+```
+
+Los valores permitidos son `chromium`, `chrome` y `msedge`.
+
+Si Chromium completo no está instalado en Windows, instálalo con:
+
+```bash
+npx.cmd --no-install playwright install --no-shell chromium
+```
+
+Como alternativa, instala Google Chrome o Microsoft Edge y selecciona `chrome` o `msedge` con `PLAYWRIGHT_BROWSER_CHANNEL`.

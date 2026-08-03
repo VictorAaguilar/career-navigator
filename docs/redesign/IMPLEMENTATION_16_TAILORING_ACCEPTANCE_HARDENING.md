@@ -11,7 +11,7 @@ Objetivo: endurecer el MVP end-to-end de Tailoring UI sin añadir capacidades de
 - `TailoringSession` permanece como fuente única de navegación.
 - El reducer de demo invalida derivados al cambiar CV u oferta.
 - Hay cobertura unitaria y SSR, pero faltan pruebas explícitas de etapas extraídas, foco, oferta sin requisitos, cero coincidencias, error DOCX inyectable y object URL revocado.
-- Playwright está declarado en el proyecto, pero el navegador Chromium no estaba instalado en la auditoría anterior.
+- Playwright está declarado en el proyecto. El E2E selecciona un navegador instalado mediante canales seguros de Playwright, sin depender de `chromium-headless-shell`.
 
 ## Fases
 
@@ -29,7 +29,7 @@ Objetivo: endurecer el MVP end-to-end de Tailoring UI sin añadir capacidades de
 - No se añade backend, storage, LLM, router, gestor de estado ni framework CSS.
 - No se modifican `TailoringSession` ni sus contratos.
 - El estado local solo se permite para foco o detalles de presentación no pertenecientes al dominio.
-- Si Playwright no puede ejecutar navegador, se mantiene la cobertura pura/SSR y se documenta la limitación.
+- Si Playwright no puede lanzar ningún canal soportado, el script informa un error estable con opciones reproducibles para instalar o seleccionar navegador.
 
 ## Resultado Final
 
@@ -45,7 +45,7 @@ El incremento endurece la demo end-to-end sin añadir capacidades de producto nu
 - Los requisitos sin evidencia no generan acciones positivas.
 - La vista previa puede generarse sin cambios cuando no hay propuestas aplicables.
 - La descarga DOCX revoca el object URL después de disparar la descarga.
-- Se añade un flujo E2E con Playwright existente, sin instalar nuevas dependencias.
+- Se añade un flujo E2E con Playwright existente, sin instalar nuevas dependencias. El lanzamiento usa canales `chromium`, `chrome` o `msedge` con `headless: !headed`, por lo que no requiere `chromium-headless-shell`.
 - Se documentan una guía de usuario y una checklist manual de aceptación.
 
 ## Archivos Principales
@@ -73,7 +73,30 @@ La cobertura añadida verifica:
 - cero propuestas con vista previa sin cambios;
 - revocación de object URL en descarga DOCX;
 - ausencia de storage, red, LLM y logging en los nuevos módulos de UI;
-- flujo de navegador con análisis, revisión, vista previa y descarga DOCX.
+- flujo de navegador con análisis, revisión, vista previa y descarga DOCX;
+- opciones de lanzamiento E2E con override `PLAYWRIGHT_BROWSER_CHANNEL`, fallback `chromium -> chrome -> msedge`, modo headless por defecto, modo visible con `--headed` y errores estables solo para navegador ausente.
+
+## Playwright Browser Channels
+
+El E2E intenta lanzar navegadores mediante canales de Playwright en este orden:
+
+1. `chromium`
+2. `chrome`
+3. `msedge`
+
+Puede fijarse un canal concreto con `PLAYWRIGHT_BROWSER_CHANNEL`. Los valores permitidos son `chromium`, `chrome` y `msedge`; cualquier otro valor produce `PLAYWRIGHT_BROWSER_CHANNEL_INVALID`.
+
+No consulta `chromium.executablePath()` para decidir si el navegador está instalado, porque esa ruta puede apuntar a `chromium-headless-shell` en Windows. La detección se basa en el error real de `chromium.launch`.
+
+El script solo pasa al siguiente canal cuando Playwright informa que el navegador de ese canal no está instalado. Otros errores de lanzamiento se propagan sin fallback silencioso.
+
+Si falta Chromium completo, puede instalarse con:
+
+```bash
+npx.cmd --no-install playwright install --no-shell chromium
+```
+
+Como alternativas, puede instalarse Google Chrome o Microsoft Edge y ejecutar el E2E con `PLAYWRIGHT_BROWSER_CHANNEL=chrome` o `PLAYWRIGHT_BROWSER_CHANNEL=msedge`.
 
 ## Limitaciones
 

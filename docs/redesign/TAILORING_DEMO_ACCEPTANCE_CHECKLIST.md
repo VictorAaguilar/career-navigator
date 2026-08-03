@@ -66,4 +66,23 @@ Checklist para validar el MVP end-to-end antes de incorporar subida de archivos,
 - [ ] `npm run web:typecheck` pasa.
 - [ ] `npm run web:build` pasa.
 - [ ] `npm audit --omit=dev` informa cero vulnerabilidades de producción.
-- [ ] `npm run web:e2e` pasa cuando Chromium está instalado.
+- [ ] `npm run web:e2e` pasa con un canal soportado de Playwright.
+- [ ] `npm run web:e2e:headed` abre el navegador elegido en modo visible y completa el flujo.
+- [ ] El fallback automático intenta `chromium`, luego `chrome`, luego `msedge`.
+- [ ] `PLAYWRIGHT_BROWSER_CHANNEL` acepta únicamente `chromium`, `chrome` o `msedge`.
+- [ ] El E2E informa el canal usado con `E2E_BROWSER_CHANNEL=<canal>`.
+- [ ] El E2E no requiere `chromium-headless-shell`.
+
+Si falta Chromium completo en Windows, instálalo con:
+
+```bash
+npx.cmd --no-install playwright install --no-shell chromium
+```
+
+También puede usarse Google Chrome o Microsoft Edge instalado mediante:
+
+```powershell
+$env:PLAYWRIGHT_BROWSER_CHANNEL="chrome"
+npm.cmd run web:e2e
+Remove-Item Env:PLAYWRIGHT_BROWSER_CHANNEL -ErrorAction SilentlyContinue
+```
