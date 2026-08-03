@@ -1,5 +1,10 @@
 import type { DocxRenderResult } from "../../../../src/schemas/docx-render.js";
 import type { RewriteCandidateSubmission } from "../../../../src/schemas/candidate.js";
+import type {
+  ResumeImportErrorCode,
+  ResumeImportSource,
+  ResumeImportWarningCode,
+} from "./resume-file-import.js";
 import { createTailoringSession, type TailoringSession } from "./tailoring-session.js";
 import { tailoringSessionReducer } from "./tailoring-session-reducer.js";
 import type { WorkflowStageId } from "./workflow-stages.js";
@@ -26,9 +31,17 @@ export type TailoringDemoDocxState = Readonly<
   | { status: "failed"; result: null; error: string }
 >;
 
+export type ResumeImportState = Readonly<
+  | { status: "idle"; source: "manual"; warnings: readonly []; errorCode: null }
+  | { status: "reading"; source: Exclude<ResumeImportSource, "manual">; warnings: readonly []; errorCode: null }
+  | { status: "ready"; source: Exclude<ResumeImportSource, "manual">; warnings: readonly ResumeImportWarningCode[]; errorCode: null }
+  | { status: "error"; source: ResumeImportSource; warnings: readonly []; errorCode: ResumeImportErrorCode }
+>;
+
 export type TailoringDemoState = Readonly<{
   session: TailoringSession;
   resumeText: string;
+  resumeImport: ResumeImportState;
   jobText: string;
   analysis: DemoAnalysisResult | null;
   reviewDecisions: DemoReviewState;
@@ -40,6 +53,15 @@ export type TailoringDemoState = Readonly<{
 export type TailoringDemoAction =
   | { type: "set_resume_text"; value: string }
   | { type: "clear_resume_text" }
+  | { type: "resume_import_started"; source: Exclude<ResumeImportSource, "manual"> }
+  | {
+      type: "resume_import_succeeded";
+      source: Exclude<ResumeImportSource, "manual">;
+      text: string;
+      warnings: readonly ResumeImportWarningCode[];
+    }
+  | { type: "resume_import_failed"; source: ResumeImportSource; errorCode: ResumeImportErrorCode }
+  | { type: "resume_import_cleared" }
   | { type: "set_job_text"; value: string }
   | { type: "clear_job_text" }
   | { type: "run_analysis" }
@@ -56,6 +78,10 @@ export type TailoringDemoAction =
 const allowedActionTypes = Object.freeze([
   "set_resume_text",
   "clear_resume_text",
+  "resume_import_started",
+  "resume_import_succeeded",
+  "resume_import_failed",
+  "resume_import_cleared",
   "set_job_text",
   "clear_job_text",
   "run_analysis",
@@ -74,6 +100,7 @@ export function createTailoringDemoState(): TailoringDemoState {
   return freezeState({
     session: createTailoringSession(),
     resumeText: "",
+    resumeImport: idleResumeImport(),
     jobText: "",
     analysis: null,
     reviewDecisions: {},
@@ -110,6 +137,49 @@ export function tailoringDemoReducer(
     return freezeState({
       ...state,
       resumeText: "",
+      resumeImport: idleResumeImport(),
+      ...emptyDerivedState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "resume_import_started") {
+    return freezeState({
+      ...state,
+      resumeImport: { status: "reading", source: action.source, warnings: [], errorCode: null },
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "resume_import_succeeded") {
+    return freezeState({
+      ...state,
+      resumeText: action.text,
+      resumeImport: {
+        status: "ready",
+        source: action.source,
+        warnings: [...action.warnings].sort(compareStable),
+        errorCode: null,
+      },
+      ...emptyDerivedState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "resume_import_failed") {
+    return freezeState({
+      ...state,
+      resumeImport: { status: "error", source: action.source, warnings: [], errorCode: action.errorCode },
+      ...emptyDerivedState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "resume_import_cleared") {
+    return freezeState({
+      ...state,
+      resumeText: "",
+      resumeImport: idleResumeImport(),
       ...emptyDerivedState(),
       visibleError: null,
     });
@@ -352,6 +422,10 @@ function idleDocx(): TailoringDemoDocxState {
   return { status: "idle", result: null, error: null };
 }
 
+function idleResumeImport(): ResumeImportState {
+  return { status: "idle", source: "manual", warnings: [], errorCode: null };
+}
+
 function safeErrorMessage(error: unknown): string {
   if (!(error instanceof Error)) {
     return "No se pudo completar la operación.";
@@ -380,6 +454,10 @@ function freezeState<T>(value: T): T {
     Object.freeze(value);
   }
   return value;
+}
+
+function compareStable(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 export function getCurrentStageId(state: TailoringDemoState): WorkflowStageId {

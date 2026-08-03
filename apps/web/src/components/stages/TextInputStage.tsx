@@ -1,3 +1,5 @@
+import type { RefObject } from "react";
+
 type TextInputStageProps = {
   id: string;
   label: string;
@@ -7,6 +9,7 @@ type TextInputStageProps = {
   error: string | null;
   onChange: (value: string) => void;
   onClear: () => void;
+  textareaRef?: RefObject<HTMLTextAreaElement | null>;
 };
 
 export function TextInputStage({
@@ -18,6 +21,7 @@ export function TextInputStage({
   error,
   onChange,
   onClear,
+  textareaRef,
 }: TextInputStageProps) {
   const helpId = `${id}-help`;
   const counterId = `${id}-counter`;
@@ -31,6 +35,7 @@ export function TextInputStage({
       </p>
       <textarea
         id={id}
+        ref={textareaRef}
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
