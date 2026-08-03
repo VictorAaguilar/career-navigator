@@ -115,6 +115,7 @@ describe("Tailoring acceptance hardening", () => {
   it("shows a safe retryable error when the offer has no extractable requirements", () => {
     let state = createTailoringDemoState();
     state = tailoringDemoReducer(state, { type: "set_resume_text", value: syntheticResume });
+    state = tailoringDemoReducer(state, { type: "use_plain_resume_parser" });
     state = tailoringDemoReducer(state, { type: "set_job_text", value: "Somos una empresa cercana con cultura colaborativa." });
     state = tailoringDemoReducer(state, { type: "run_analysis" });
 

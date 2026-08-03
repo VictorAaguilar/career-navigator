@@ -106,6 +106,8 @@ async function run() {
     await page.getByRole("button", { name: "Comenzar" }).click();
     await page.getByRole("textbox", { name: "Currículum" }).fill(cvText);
     await expectText(page, `${cvText.length} caracteres`);
+    await page.getByRole("button", { name: "Usar análisis de texto plano" }).click();
+    await expectText(page, "Modo de texto plano seleccionado");
     await page.getByRole("button", { name: "Continuar" }).click();
 
     await page.getByRole("textbox", { name: "Oferta laboral" }).fill(offerText);
