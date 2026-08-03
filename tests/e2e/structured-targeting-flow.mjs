@@ -193,7 +193,7 @@ async function runTargetingScenario(page, downloadDir) {
   await page.getByRole("button", { name: "Continuar" }).click();
 
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Descargar DOCX" }).click();
+  await page.getByRole("button", { name: "Descargar currículum adaptado" }).click();
   const download = await downloadPromise;
   if (download.suggestedFilename() !== "curriculum-adaptado.docx") {
     throw new Error(`UNEXPECTED_FILENAME ${download.suggestedFilename()}`);

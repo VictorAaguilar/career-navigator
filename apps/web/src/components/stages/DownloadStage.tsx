@@ -23,7 +23,7 @@ export function DownloadStage({ state, onDownload }: { state: TailoringDemoState
         disabled={state.docx.status === "generating"}
         aria-describedby="download-help"
       >
-        {state.docx.status === "generating" ? "Generando DOCX" : "Descargar DOCX"}
+        {state.docx.status === "generating" ? "Generando DOCX" : "Descargar currículum adaptado"}
       </button>
       <p id="download-help" className="field-note">
         Nombre del archivo: {TAILORING_DEMO_DOWNLOAD_FILENAME}. Revisa el documento antes de enviarlo.
@@ -32,7 +32,11 @@ export function DownloadStage({ state, onDownload }: { state: TailoringDemoState
         {state.docx.status === "ready" ? (
           <p className="field-note">DOCX preparado: {state.docx.result.byteLength} bytes.</p>
         ) : null}
-        {state.docx.status === "failed" ? <p className="field-error">{state.docx.error}</p> : null}
+        {state.docx.status === "failed" ? (
+          <p className="field-error" role="alert">
+            {state.docx.error}
+          </p>
+        ) : null}
       </div>
     </div>
   );

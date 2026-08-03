@@ -154,7 +154,7 @@ async function run() {
 
     await page.keyboard.press("Tab");
     const downloadPromise = page.waitForEvent("download");
-    await page.getByRole("button", { name: "Descargar DOCX" }).click();
+    await page.getByRole("button", { name: "Descargar currículum adaptado" }).click();
     const download = await downloadPromise;
     if (download.suggestedFilename() !== "curriculum-adaptado.docx") {
       throw new Error(`UNEXPECTED_FILENAME ${download.suggestedFilename()}`);
