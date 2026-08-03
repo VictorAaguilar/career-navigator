@@ -18,12 +18,15 @@ export default function App() {
     sessionStatus,
     guardMessage,
     titleRef,
+    resumeTextareaRef,
     isAnalyzing,
     isApplyingReview,
     canGoBackward,
     canGoForward,
     handlePrevious,
     handleNext,
+    handleResumeFileSelected,
+    handleClearResumeImport,
     handleRunAnalysis,
     handleApplyReview,
     handleDownload,
@@ -55,7 +58,10 @@ export default function App() {
               state={state}
               stage={currentStage}
               titleRef={titleRef}
+              resumeTextareaRef={resumeTextareaRef}
               onStart={handleNext}
+              onResumeFileSelected={handleResumeFileSelected}
+              onClearResumeImport={handleClearResumeImport}
               onRunAnalysis={handleRunAnalysis}
               onApplyReview={handleApplyReview}
               onDownload={handleDownload}

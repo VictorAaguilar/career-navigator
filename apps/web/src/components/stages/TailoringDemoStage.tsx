@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import type { WorkflowStage } from "../../app/workflow-stages";
 import type { TailoringDemoState } from "../../app/tailoring-demo-state";
 import { AnalysisStage } from "./AnalysisStage";
@@ -16,7 +17,10 @@ type TailoringDemoStageProps = {
   state: TailoringDemoState;
   stage: WorkflowStage;
   titleRef: StageHeaderProps["titleRef"];
+  resumeTextareaRef: RefObject<HTMLTextAreaElement | null>;
   onStart: () => void;
+  onResumeFileSelected: (file: File | null) => void;
+  onClearResumeImport: () => void;
   onRunAnalysis: () => void;
   onApplyReview: () => void;
   onDownload: () => void;
@@ -29,7 +33,10 @@ export function TailoringDemoStage({
   state,
   stage,
   titleRef,
+  resumeTextareaRef,
   onStart,
+  onResumeFileSelected,
+  onClearResumeImport,
   onRunAnalysis,
   onApplyReview,
   onDownload,
@@ -41,7 +48,15 @@ export function TailoringDemoStage({
     <div className="stage-content">
       <StageHeader stage={stage} titleRef={titleRef} />
       {stage.id === "start" ? <StartStage onStart={onStart} /> : null}
-      {stage.id === "resume" ? <ResumeStage state={state} dispatch={dispatch} /> : null}
+      {stage.id === "resume" ? (
+        <ResumeStage
+          state={state}
+          dispatch={dispatch}
+          textareaRef={resumeTextareaRef}
+          onFileSelected={onResumeFileSelected}
+          onClearImport={onClearResumeImport}
+        />
+      ) : null}
       {stage.id === "job" ? <JobStage state={state} dispatch={dispatch} /> : null}
       {stage.id === "analysis" ? (
         <AnalysisStage state={state} onRunAnalysis={onRunAnalysis} isAnalyzing={isAnalyzing} />

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useReducer, useState } from "react";
 import type { DocxRenderResult } from "../../../../src/schemas/docx-render.js";
+import type { ResumeImportSource } from "./resume-file-import.js";
 import {
   canAdvanceTailoringDemo,
   createTailoringDemoState,
@@ -48,6 +49,8 @@ export function useTailoringDemoController() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isApplyingReview, setIsApplyingReview] = useState(false);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
+  const resumeTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const resumeImportSequenceRef = useRef(0);
   const session = state.session;
   const currentStage = getWorkflowStage(session.currentStageId);
   const navigationState = useMemo(
@@ -76,6 +79,53 @@ export function useTailoringDemoController() {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleResumeFileSelected = async (file: File | null) => {
+    const sequence = resumeImportSequenceRef.current + 1;
+    resumeImportSequenceRef.current = sequence;
+
+    try {
+      const {
+        ResumeImportError,
+        ResumeImportErrorCode,
+        getResumeImportSource,
+        importResumeFile,
+      } = await import("./resume-file-import");
+      if (file === null) {
+        throw new ResumeImportError(ResumeImportErrorCode.FileRequired);
+      }
+      const source = getResumeImportSource(file);
+      dispatch({ type: "resume_import_started", source });
+      const result = await importResumeFile(file);
+      if (resumeImportSequenceRef.current !== sequence) {
+        return;
+      }
+      dispatch({
+        type: "resume_import_succeeded",
+        source: result.source,
+        text: result.text,
+        warnings: result.warnings,
+      });
+      resumeTextareaRef.current?.focus({ preventScroll: false });
+    } catch (error) {
+      if (resumeImportSequenceRef.current !== sequence) {
+        return;
+      }
+      const { ResumeImportError } = await import("./resume-file-import");
+      const source = inferFailedImportSource(file);
+      dispatch({
+        type: "resume_import_failed",
+        source,
+        errorCode: error instanceof ResumeImportError ? error.code : "RESUME_IMPORT_FAILED",
+      });
+    }
+  };
+
+  const handleClearResumeImport = () => {
+    resumeImportSequenceRef.current += 1;
+    dispatch({ type: "resume_import_cleared" });
+    resumeTextareaRef.current?.focus({ preventScroll: false });
   };
 
   const handleApplyReview = () => {
@@ -121,6 +171,7 @@ export function useTailoringDemoController() {
     sessionStatus,
     guardMessage,
     titleRef,
+    resumeTextareaRef,
     isAnalyzing,
     isApplyingReview,
     canGoBackward: canNavigateBackward(session.currentStageId),
@@ -128,7 +179,23 @@ export function useTailoringDemoController() {
     handlePrevious,
     handleNext,
     handleRunAnalysis,
+    handleResumeFileSelected,
+    handleClearResumeImport,
     handleApplyReview,
     handleDownload,
   };
+}
+
+function inferFailedImportSource(file: File | null): ResumeImportSource {
+  if (file === null) {
+    return "manual";
+  }
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".docx")) {
+    return "docx";
+  }
+  if (name.endsWith(".pdf")) {
+    return "pdf";
+  }
+  return "manual";
 }
