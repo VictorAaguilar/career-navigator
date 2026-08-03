@@ -1,6 +1,6 @@
 import type { TailoringDemoState } from "../../app/tailoring-demo-state";
 import type { DemoDispatch } from "./stage-types";
-import { EmptyState, TwoColumnText, ValidationSummary } from "./shared";
+import { EmptyState, LocationExplanation, TwoColumnText, ValidationSummary } from "./shared";
 
 export function ReviewStage({
   state,
@@ -38,6 +38,12 @@ export function ReviewStage({
         return (
           <article className="demo-item" key={validationId}>
             <h3>{proposal.requirementText}</h3>
+            <LocationExplanation
+              title="Ubicación objetivo"
+              location={proposal.targetLocation}
+              reasonLabels={proposal.targetingReasonLabels}
+              relatedRequirement={proposal.requirementText}
+            />
             <TwoColumnText original={proposal.originalText} candidate={proposal.currentCandidateText} />
             <label htmlFor={`${validationId}-edit`}>Editar propuesta</label>
             <p id={editHelpId} className="field-help">

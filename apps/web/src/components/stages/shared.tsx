@@ -1,4 +1,6 @@
 import { TAILORING_DEMO_DOWNLOAD_FILENAME } from "../../app/tailoring-demo-constants";
+import { useId } from "react";
+import type { DemoLocationDisplay } from "../../app/tailoring-demo-pipeline";
 import type { StageHeaderProps } from "./stage-types";
 
 export { TAILORING_DEMO_DOWNLOAD_FILENAME };
@@ -40,6 +42,56 @@ export function TwoColumnText({ original, candidate }: { original: string; candi
         <p>{candidate}</p>
       </div>
     </div>
+  );
+}
+
+export function LocationExplanation({
+  title,
+  location,
+  reasonLabels = [],
+  relatedRequirement,
+}: {
+  title: string;
+  location: DemoLocationDisplay;
+  reasonLabels?: readonly string[];
+  relatedRequirement?: string;
+}) {
+  const titleId = useId();
+  const warningId = useId();
+  const hasWarnings = location.warningLabels.length > 0;
+
+  return (
+    <section
+      className={`location-explanation location-${location.status}`}
+      aria-labelledby={titleId}
+      aria-describedby={hasWarnings ? warningId : undefined}
+    >
+      <h4 id={titleId}>{title}</h4>
+      <p className="location-label">{location.label}</p>
+      <p className="location-detail">{location.detail}</p>
+      {relatedRequirement === undefined ? null : (
+        <p className="location-requirement">
+          <strong>Requisito relacionado:</strong> {relatedRequirement}
+        </p>
+      )}
+      {reasonLabels.length === 0 ? null : (
+        <div className="location-reasons">
+          <p className="location-reason-title">Por qué se propone aquí</p>
+          <ul className="location-reason-list" aria-label="Motivos de ubicación">
+            {reasonLabels.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {hasWarnings ? (
+        <ul id={warningId} className="location-warning-list" aria-label="Advertencias de ubicación">
+          {location.warningLabels.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
   );
 }
 

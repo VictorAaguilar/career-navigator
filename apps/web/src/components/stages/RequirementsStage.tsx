@@ -1,5 +1,5 @@
 import type { TailoringDemoState } from "../../app/tailoring-demo-state";
-import { EmptyState, RequirementStatusBadge } from "./shared";
+import { EmptyState, LocationExplanation, RequirementStatusBadge } from "./shared";
 
 export function RequirementsStage({ state }: { state: TailoringDemoState }) {
   if (state.analysis === null) {
@@ -16,12 +16,17 @@ export function RequirementsStage({ state }: { state: TailoringDemoState }) {
           </div>
           <p>{row.explanation}</p>
           <p className="field-note">Contribución: {row.contribution}/100</p>
-          {row.evidenceTexts.length === 0 ? (
-            <p className="missing-evidence">No hay evidencia en el currículum.</p>
+          {row.evidenceLocations.length === 0 ? (
+            <p className="missing-evidence">No se encontró evidencia en el currículum.</p>
           ) : (
-            <ul>
-              {row.evidenceTexts.map((evidenceText) => (
-                <li key={evidenceText}>{evidenceText}</li>
+            <ul className="evidence-location-list">
+              {row.evidenceLocations.map((evidence) => (
+                <li key={`${evidence.evidenceText}-${evidence.location.label}`}>
+                  <p>
+                    <strong>{evidence.supportLabel}:</strong> {evidence.evidenceText}
+                  </p>
+                  <LocationExplanation title="Ubicación de la evidencia" location={evidence.location} />
+                </li>
               ))}
             </ul>
           )}
