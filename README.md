@@ -112,6 +112,26 @@ Career-ops is agentic: whichever AI coding CLI you choose navigates career pages
 
 Built by someone who used it to evaluate 740+ job offers, generate 100+ tailored CVs, and land a Head of Applied AI role. [Read the full case study](https://santifer.io/career-ops-system).
 
+## Career Navigator Web Release Candidate
+
+This branch also includes a local-first CV Tailoring Agent web Release Candidate. It lets a reviewer paste or import a resume, paste a target offer, inspect deterministic matching evidence, review proposed changes, preview the adapted resume and download `curriculum-adaptado.docx`.
+
+The RC runs entirely in the browser: no backend, no storage, no telemetry and no LLM calls. Validate it locally with locked dependencies:
+
+```bash
+npm ci
+npm run release:check
+```
+
+On Windows, use `npm.cmd`:
+
+```powershell
+npm.cmd ci
+npm.cmd run release:check
+```
+
+Detailed validation, browser-channel notes and production-preview instructions are documented in [docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md](docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md). Release readiness and known limitations are tracked in [docs/redesign/RELEASE_CANDIDATE_READINESS.md](docs/redesign/RELEASE_CANDIDATE_READINESS.md) and [docs/redesign/RELEASE_NOTES_RC1.md](docs/redesign/RELEASE_NOTES_RC1.md).
+
 ## Features
 
 | Feature                  | Description                                                                                                                              |

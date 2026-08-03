@@ -88,9 +88,11 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] La vista previa muestra cambios aplicados con ubicación y requisito relacionado. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
 - [ ] La vista previa separa cambios no aplicados de cambios aplicados. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
 - [ ] El botón de descarga solo aparece cuando hay vista previa. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
-- [ ] La descarga usa el nombre `curriculum-adaptado.docx`. Automatizado: `npm run web:e2e`.
+- [ ] El botón visible dice `Descargar currículum adaptado`. Automatizado: `tests/unit/release-candidate-stabilization.test.ts`.
+- [ ] La descarga usa el nombre `curriculum-adaptado.docx`. Automatizado: `npm run web:e2e`, `npm run web:e2e:rc`.
 - [ ] El DOCX descargado no contiene IDs internos visibles. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
 - [ ] El DOCX descargado no contiene metadata de ubicación de UI. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting`.
+- [ ] El DOCX del Release Candidate contiene los cambios aprobados y excluye propuestas rechazadas. Automatizado: `npm run web:e2e:rc`.
 - [ ] El DOCX descargado se puede abrir con un lector compatible. Manual.
 
 ## Accesibilidad Y Responsive
@@ -100,9 +102,10 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] Los mensajes de error usan `role="alert"`. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
 - [ ] El panel estructural usa `fieldset`, `legend`, labels visibles y `aria-live`. Automatizado: `tests/unit/resume-file-import.test.ts`; revisión manual recomendada.
 - [ ] Las áreas editables exponen ayuda y estado de validación. Manual.
-- [ ] La interfaz es usable en 320 px, 375 px, 768 px y escritorio. Manual.
+- [ ] La interfaz no produce overflow horizontal general en 320 px, 375 px, 768 px, 1024 px y 1440 px. Automatizado: `npm run web:e2e:rc`; revisión visual manual recomendada.
 - [ ] Las ubicaciones rompen línea y no causan scroll horizontal general en móvil. Manual.
 - [ ] Las advertencias de ubicación se entienden sin depender de color ni iconos. Automatizado parcialmente: `tests/unit/structured-targeting-explanations.test.ts`.
+- [ ] El flujo básico puede avanzar por teclado hasta confirmar estructura. Automatizado: `npm run web:e2e:rc`; auditoría WCAG manual pendiente.
 
 ## Privacidad
 
@@ -121,6 +124,7 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] `npm run typecheck` pasa.
 - [ ] `npm run web:typecheck` pasa.
 - [ ] `npm run web:build` pasa.
+- [ ] `npm run web:bundle:check` pasa y mantiene PDF.js, `pdf.worker`, JSZip y DOCX fuera del bundle inicial.
 - [ ] `npm audit --omit=dev` informa cero vulnerabilidades de producción.
 - [ ] `npm run web:e2e` pasa con un canal soportado de Playwright.
 - [ ] `npm run web:e2e:import` pasa con DOCX, PDF, PDF sin texto y archivo inválido.
@@ -128,10 +132,26 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] `npm run web:e2e:structure:headed` abre el navegador elegido y completa el flujo estructurado.
 - [ ] `npm run web:e2e:targeting` pasa con flujo estructurado, trazabilidad y DOCX.
 - [ ] `npm run web:e2e:targeting:headed` abre el navegador elegido y completa el flujo de trazabilidad.
+- [ ] `npm run web:e2e:rc` pasa contra `vite preview`.
+- [ ] `npm run web:e2e:rc:headed` abre el navegador elegido y completa el flujo RC.
+- [ ] `npm run release:check` pasa tras `npm ci`.
 - [ ] El fallback automático intenta `chromium`, luego `chrome`, luego `msedge`.
 - [ ] `PLAYWRIGHT_BROWSER_CHANNEL` acepta únicamente `chromium`, `chrome` o `msedge`.
 - [ ] El E2E informa el canal usado con `E2E_BROWSER_CHANNEL=<canal>`.
 - [ ] El E2E no requiere `chromium-headless-shell`.
+
+## Release Candidate
+
+- [ ] Chrome queda aprobado para RC1 con `PLAYWRIGHT_BROWSER_CHANNEL=chrome`.
+- [ ] Microsoft Edge queda aprobado para RC1 con `PLAYWRIGHT_BROWSER_CHANNEL=msedge`.
+- [ ] Chromium completo queda soportado por el runner, pero requiere instalación manual si el entorno no lo tiene disponible.
+- [ ] Firefox no queda aprobado en RC1.
+- [ ] Safari no queda probado en RC1.
+- [ ] `apps/web/dist` está ignorado y no se comitea.
+- [ ] `test-results` y `playwright-report` están ignorados o eliminados antes del commit.
+- [ ] `docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md` describe instalación, validación y limpieza.
+- [ ] `docs/redesign/RELEASE_CANDIDATE_READINESS.md` describe estados aprobados, pendientes y fuera de alcance.
+- [ ] `docs/redesign/RELEASE_NOTES_RC1.md` lista garantías, limitaciones y riesgos pendientes.
 
 Si falta Chromium completo en Windows, instálalo con:
 
