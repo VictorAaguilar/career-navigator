@@ -3,6 +3,7 @@ import { dirname, join, normalize, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
+const basePathFromEnv = process.env.CAREER_NAVIGATOR_BASE_PATH ?? "/";
 
 export const WEB_BUNDLE_BUDGETS = Object.freeze({
   initialJsBytes: 466_000,
@@ -19,6 +20,7 @@ export const HEAVY_INITIAL_ASSET_PATTERNS = Object.freeze([
 export function analyzeWebBundle({
   distDir = resolve(repoRoot, "apps", "web", "dist"),
   budgets = WEB_BUNDLE_BUDGETS,
+  basePath = basePathFromEnv,
 } = {}) {
   const indexPath = resolve(distDir, "index.html");
   const html = readText(indexPath);
@@ -31,9 +33,11 @@ export function analyzeWebBundle({
   const heavyInitialAssets = initialAssets.filter((asset) =>
     HEAVY_INITIAL_ASSET_PATTERNS.some((pattern) => pattern.test(asset)),
   );
+  const basePathViolations = findBasePathViolations(initialAssets, basePath);
   const assetDetails = initialAssets
     .filter((asset) => !/^https?:\/\//iu.test(asset))
-    .map((asset) => assetDetail(distDir, asset));
+    .filter((asset) => !basePathViolations.some((violation) => violation.asset === asset))
+    .map((asset) => assetDetail(distDir, asset, basePath));
   const initialJsBytes = assetDetails
     .filter((asset) => asset.type === "js")
     .reduce((total, asset) => total + asset.bytes, 0);
@@ -64,6 +68,7 @@ export function analyzeWebBundle({
       initialCss,
       externalUrls,
       heavyInitialAssets,
+      basePathViolations,
       budgets,
     })),
   });
@@ -101,6 +106,7 @@ function buildViolations({
   initialCss,
   externalUrls,
   heavyInitialAssets,
+  basePathViolations,
   budgets,
 }) {
   const violations = [];
@@ -125,11 +131,14 @@ function buildViolations({
   if (heavyInitialAssets.length > 0) {
     violations.push(`Chunks pesados cargados de inicio: ${heavyInitialAssets.join(", ")}.`);
   }
+  for (const violation of basePathViolations) {
+    violations.push(`Asset inicial fuera del base path ${violation.basePath}: ${violation.asset}.`);
+  }
   return violations;
 }
 
-function assetDetail(distDir, asset) {
-  const assetPath = resolveAssetPath(distDir, asset);
+function assetDetail(distDir, asset, basePath) {
+  const assetPath = resolveAssetPath(distDir, asset, basePath);
   const normalizedAsset = normalize(asset);
   return Object.freeze({
     asset,
@@ -140,11 +149,11 @@ function assetDetail(distDir, asset) {
   });
 }
 
-function resolveAssetPath(distDir, asset) {
+function resolveAssetPath(distDir, asset, basePath = "/") {
   if (/^https?:\/\//iu.test(asset)) {
     throw new Error(`WEB_BUNDLE_EXTERNAL_ASSET: ${asset}`);
   }
-  const withoutQuery = asset.split("?")[0];
+  const withoutQuery = stripBasePath(asset.split("?")[0], basePath);
   const localPath = withoutQuery.startsWith("/")
     ? join(distDir, withoutQuery.slice(1))
     : join(distDir, withoutQuery);
@@ -153,6 +162,22 @@ function resolveAssetPath(distDir, asset) {
     throw new Error("WEB_BUNDLE_ASSET_OUTSIDE_DIST");
   }
   return resolved;
+}
+
+function findBasePathViolations(assets, basePath) {
+  if (basePath === "/" || basePath === "") {
+    return [];
+  }
+  return assets
+    .filter((asset) => asset.startsWith("/") && !asset.startsWith(basePath))
+    .map((asset) => Object.freeze({ asset, basePath }));
+}
+
+function stripBasePath(asset, basePath) {
+  if (basePath !== "/" && asset.startsWith(basePath)) {
+    return `/${asset.slice(basePath.length)}`;
+  }
+  return asset;
 }
 
 function extractAttributeValues(html, tagName, attributeName) {
