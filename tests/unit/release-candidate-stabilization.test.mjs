@@ -175,7 +175,7 @@ describe("Release Candidate stabilization", () => {
     const source = readRepoFile("tests/e2e/release-candidate-flow.mjs");
 
     expect(source).toContain("npm.cmd run preview --workspace @career-navigator/web");
-    expect(source).toContain("const port = 4178");
+    expect(source).toContain("port: 4178");
     expect(source).not.toContain("npm.cmd run dev");
   });
 
