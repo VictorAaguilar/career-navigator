@@ -1,18 +1,18 @@
 # Tailoring Demo Acceptance Checklist
 
-Checklist para validar el MVP end-to-end antes de incorporar subida de archivos, LLM, backend o despliegue.
+Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o despliegue.
 
 ## Navegación
 
-- [ ] Solo una etapa aparece como actual.
-- [ ] El stepper no permite navegación directa.
-- [ ] `Continuar` permanece bloqueado cuando falta información obligatoria.
-- [ ] `Anterior` permite volver sin perder datos de la sesión actual.
-- [ ] El foco se mueve al título de cada etapa al avanzar o retroceder.
+- [ ] Solo una etapa aparece como actual. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
+- [ ] El stepper no permite navegación directa. Automatizado: `tests/unit/tailoring-session-contracts.test.ts`.
+- [ ] `Continuar` permanece bloqueado cuando falta información obligatoria. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] `Anterior` permite volver sin perder datos de la sesión actual. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] El foco se mueve al título de cada etapa al avanzar o retroceder. Manual.
 
 ## Entrada De Datos
 
-- [ ] El campo de currículum conserva el texto pegado.
+- [ ] El campo de currículum conserva el texto pegado. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] DOCX válido importa texto localmente. Automatizado: `tests/unit/resume-file-import.test.ts`, `npm run web:e2e:import`.
 - [ ] PDF válido importa texto seleccionable localmente. Automatizado: `tests/unit/resume-file-import.test.ts`, `npm run web:e2e:import`.
 - [ ] PDF multipágina conserva orden de páginas. Automatizado: `tests/unit/resume-file-import.test.ts`.
@@ -22,53 +22,79 @@ Checklist para validar el MVP end-to-end antes de incorporar subida de archivos,
 - [ ] Tipos renombrados se rechazan por firma. Automatizado: `tests/unit/resume-file-import.test.ts`, `npm run web:e2e:import`.
 - [ ] Archivo demasiado grande se rechaza antes de procesar. Automatizado: `tests/unit/resume-file-import.test.ts`.
 - [ ] Texto superior a 24.000 caracteres queda editable pero bloquea avanzar. Automatizado: `tests/unit/resume-file-import.test.ts`.
-- [ ] Editar después de importar invalida análisis previo. Automatizado: `tests/unit/resume-file-import.test.ts`.
+- [ ] Editar después de importar invalida análisis y estructura. Automatizado: `tests/unit/resume-file-import.test.ts`, `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] Seleccionar dos archivos rápidamente conserva solo el último resultado. Manual; contrato protegido por contador local en `useTailoringDemoController`.
-- [ ] El campo de oferta conserva el texto pegado.
-- [ ] Los contadores de caracteres se actualizan al escribir.
-- [ ] No se muestran datos pegados dentro de mensajes de error.
+- [ ] El campo de oferta conserva el texto pegado. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] Los contadores de caracteres se actualizan al escribir. Automatizado: `npm run web:e2e`.
+- [ ] No se muestran datos pegados dentro de mensajes de error. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
+
+## Parsing Estructural
+
+- [ ] Reconoce `Contacto`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] Reconoce `Perfil profesional`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure`.
+- [ ] Reconoce `Experiencia`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure`.
+- [ ] Reconoce `Formación`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure`.
+- [ ] Reconoce `Habilidades`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure`.
+- [ ] Reconoce `Idiomas`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure`.
+- [ ] Reconoce `Certificaciones`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] Reconoce `Proyectos`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] Reconoce aliases españoles. Automatizado: `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] Reconoce aliases ingleses. Automatizado: `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] Documento sin encabezados produce `STRUCTURED_RESUME_NO_HEADINGS`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure`.
+- [ ] Encabezado desconocido queda como `Otra`. Automatizado: `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] Secciones repetidas se conservan separadas. Automatizado: `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] Cambiar manualmente una categoría conserva texto y orden. Automatizado: `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure`.
+- [ ] Confirmar estructura permite avanzar. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e:structure`.
+- [ ] Elegir parser plano permite avanzar. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e`.
+- [ ] Cambiar `resumeText` invalida estructura. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e:structure`.
+- [ ] Cambiar una categoría invalida confirmación y análisis. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] Importar DOCX permite detectar y confirmar estructura. Automatizado: `npm run web:e2e:import`.
+- [ ] Importar PDF deja texto editable para detectar estructura. Automatizado: `tests/unit/resume-file-import.test.ts`; revisión visual manual recomendada.
+- [ ] No se inventa texto, cargos, empresas, fechas ni habilidades. Automatizado: `tests/unit/structured-resume-parsing.test.ts`.
 
 ## Análisis
 
-- [ ] Una oferta con requisitos concretos genera resultados revisables.
-- [ ] Una oferta sin requisitos extraíbles muestra un error seguro.
-- [ ] Un requisito no cubierto no genera evidencia positiva.
-- [ ] Un requisito desconocido no genera afirmaciones positivas.
-- [ ] El orden de resultados es estable.
+- [ ] Una oferta con requisitos concretos genera resultados revisables. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
+- [ ] Una oferta sin requisitos extraíbles muestra un error seguro. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
+- [ ] Un requisito no cubierto no genera evidencia positiva. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e:structure`.
+- [ ] Un requisito desconocido no genera afirmaciones positivas. Automatizado: `tests/unit/tailoring.test.ts`.
+- [ ] El orden de resultados es estable. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] Scoring no cambia por mera existencia de estructura. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 
 ## Propuestas Y Revisión
 
-- [ ] Las propuestas muestran texto original y texto sugerido.
-- [ ] Cada propuesta puede aprobarse, rechazarse o editarse.
-- [ ] Una edición inválida muestra revisión o rechazo.
-- [ ] Una edición rechazada no puede aprobarse.
-- [ ] Si no hay propuestas aplicables, se puede generar vista previa sin cambios.
-- [ ] Si todas las propuestas se rechazan, la vista previa conserva el texto original.
+- [ ] Las propuestas muestran texto original y texto sugerido. Automatizado: `npm run web:e2e`.
+- [ ] Cada propuesta puede aprobarse, rechazarse o editarse. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] Una edición inválida muestra revisión o rechazo. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] Una edición rechazada no puede aprobarse. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] Si no hay propuestas aplicables, se puede generar vista previa sin cambios. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
+- [ ] Si todas las propuestas se rechazan, la vista previa conserva el texto original. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 
 ## Vista Previa Y DOCX
 
-- [ ] La vista previa muestra el currículum resultante.
-- [ ] El botón de descarga solo aparece cuando hay vista previa.
-- [ ] La descarga usa el nombre `curriculum-adaptado.docx`.
-- [ ] El DOCX descargado no contiene IDs internos visibles.
-- [ ] El DOCX descargado se puede abrir con un lector compatible.
+- [ ] La vista previa muestra el currículum resultante. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
+- [ ] El botón de descarga solo aparece cuando hay vista previa. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] La descarga usa el nombre `curriculum-adaptado.docx`. Automatizado: `npm run web:e2e`.
+- [ ] El DOCX descargado no contiene IDs internos visibles. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
+- [ ] El DOCX descargado se puede abrir con un lector compatible. Manual.
 
 ## Accesibilidad Y Responsive
 
-- [ ] Hay un único `aria-current="step"`.
-- [ ] Los campos tienen etiquetas accesibles.
-- [ ] Los mensajes de error usan `role="alert"`.
-- [ ] Las áreas editables exponen ayuda y estado de validación.
-- [ ] La interfaz es usable en móvil, tablet y escritorio.
+- [ ] Hay un único `aria-current="step"`. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
+- [ ] Los campos tienen etiquetas accesibles. Automatizado: `tests/unit/resume-file-import.test.ts`.
+- [ ] Los mensajes de error usan `role="alert"`. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
+- [ ] El panel estructural usa `fieldset`, `legend`, labels visibles y `aria-live`. Automatizado: `tests/unit/resume-file-import.test.ts`; revisión manual recomendada.
+- [ ] Las áreas editables exponen ayuda y estado de validación. Manual.
+- [ ] La interfaz es usable en 320 px, 375 px, 768 px y escritorio. Manual.
 
 ## Privacidad
 
-- [ ] No hay llamadas de red de producto.
-- [ ] No hay `localStorage`.
-- [ ] No hay `sessionStorage`.
-- [ ] No hay cookies.
-- [ ] No hay timestamps, UUIDs ni `Math.random` en el flujo de demo.
-- [ ] No se registran CV u oferta en consola.
+- [ ] No hay llamadas de red de producto. Automatizado: `npm run web:e2e:import`, `npm run web:e2e:structure`.
+- [ ] No hay `localStorage`. Automatizado: `tests/unit/resume-file-import.test.ts`, `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] No hay `sessionStorage`. Automatizado: `tests/unit/resume-file-import.test.ts`, `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] No hay cookies. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] No hay timestamps, UUIDs ni `Math.random` en el flujo de demo. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `tests/unit/structured-resume-parsing.test.ts`.
+- [ ] No se registran CV u oferta en consola. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e:structure`.
 - [ ] No se registran nombres de archivo ni texto importado. Automatizado: `tests/unit/resume-file-import.test.ts`.
 
 ## Automatización
@@ -80,8 +106,8 @@ Checklist para validar el MVP end-to-end antes de incorporar subida de archivos,
 - [ ] `npm audit --omit=dev` informa cero vulnerabilidades de producción.
 - [ ] `npm run web:e2e` pasa con un canal soportado de Playwright.
 - [ ] `npm run web:e2e:import` pasa con DOCX, PDF, PDF sin texto y archivo inválido.
-- [ ] `npm run web:e2e:import:headed` abre el navegador elegido y completa el flujo de importación.
-- [ ] `npm run web:e2e:headed` abre el navegador elegido en modo visible y completa el flujo.
+- [ ] `npm run web:e2e:structure` pasa con flujo estructurado, parser plano e invalidación.
+- [ ] `npm run web:e2e:structure:headed` abre el navegador elegido y completa el flujo estructurado.
 - [ ] El fallback automático intenta `chromium`, luego `chrome`, luego `msedge`.
 - [ ] `PLAYWRIGHT_BROWSER_CHANNEL` acepta únicamente `chromium`, `chrome` o `msedge`.
 - [ ] El E2E informa el canal usado con `E2E_BROWSER_CHANNEL=<canal>`.
@@ -100,3 +126,4 @@ $env:PLAYWRIGHT_BROWSER_CHANNEL="chrome"
 npm.cmd run web:e2e
 Remove-Item Env:PLAYWRIGHT_BROWSER_CHANNEL -ErrorAction SilentlyContinue
 ```
+
