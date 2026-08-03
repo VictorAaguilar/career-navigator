@@ -42,4 +42,101 @@ Objetivo: permitir importar currículums DOCX y PDF desde la etapa `Currículum`
 
 ## Resultado Final
 
-Pendiente de completar al finalizar el incremento.
+La implementación añade importación local de currículums DOCX y PDF en la etapa `Currículum`.
+
+- `resumeText` sigue siendo la única entrada canónica.
+- El reducer incorpora solo `resumeImport`, un estado efímero con `status`, `source`, `warnings` y `errorCode`.
+- No se almacenan `File`, `Blob`, `ArrayBuffer`, `Uint8Array`, rutas, object URLs ni bytes.
+- `resume_import_succeeded` actualiza `resumeText` e invalida derivados mediante el mismo contrato que la edición manual.
+- Las lecturas async ocurren en `useTailoringDemoController`, fuera del reducer.
+- `resumeImportSequenceRef` garantiza que el último archivo seleccionado gana y que resultados obsoletos no sobrescriben el estado.
+- La UI mantiene el textarea visible y editable tras importar.
+
+## Implementación DOCX
+
+La importación DOCX usa `jszip@3.10.1` declarado directamente en `@career-navigator/web`.
+
+Validación:
+
+- extensión `.docx`;
+- MIME DOCX cuando el navegador lo proporciona;
+- firma ZIP;
+- presencia de `[Content_Types].xml`;
+- presencia de `word/document.xml`;
+- límite de entradas ZIP;
+- rechazo de DTD, DOCTYPE y CDATA.
+
+Extracción:
+
+- `word/document.xml`;
+- headers y footers referenciados desde `word/_rels/document.xml.rels`;
+- párrafos;
+- tablas mediante sus párrafos internos;
+- tabs;
+- saltos;
+- entidades XML estándar y numéricas;
+- Unicode y acentos.
+
+No conserva formato visual, imágenes, colores, columnas ni iconos.
+
+## Implementación PDF
+
+La importación PDF usa `pdfjs-dist@6.2.108` declarado directamente en `@career-navigator/web`.
+
+Justificación: no existía parser PDF local ya instalado. `pdfjs-dist` permite extraer texto seleccionable en el navegador sin backend, sin OCR y sin servicios externos.
+
+El módulo se carga dinámicamente solo al importar PDF. El worker se resuelve desde el bundle local con:
+
+```ts
+new URL("pdfjs-dist/build/pdf.worker.mjs", import.meta.url)
+```
+
+No se usa CDN ni URL remota.
+
+Validación:
+
+- extensión `.pdf`;
+- MIME PDF cuando el navegador lo proporciona;
+- firma `%PDF-`;
+- máximo 50 páginas;
+- detección de PDF sin texto seleccionable;
+- clasificación segura de PDF protegido o dañado.
+
+Orden textual:
+
+- páginas en orden ascendente;
+- elementos agrupados por posición vertical con tolerancia de 2,5 unidades;
+- texto dentro de cada línea ordenado por posición horizontal;
+- warning visible para columnas, tablas y diseños complejos.
+
+## Errores Estables
+
+- `RESUME_IMPORT_FILE_REQUIRED`
+- `RESUME_IMPORT_FILE_TOO_LARGE`
+- `RESUME_IMPORT_TYPE_UNSUPPORTED`
+- `RESUME_IMPORT_SIGNATURE_INVALID`
+- `RESUME_IMPORT_DOCX_INVALID`
+- `RESUME_IMPORT_DOCX_TOO_COMPLEX`
+- `RESUME_IMPORT_PDF_INVALID`
+- `RESUME_IMPORT_PDF_PASSWORD_PROTECTED`
+- `RESUME_IMPORT_PDF_TOO_MANY_PAGES`
+- `RESUME_IMPORT_PDF_NO_TEXT`
+- `RESUME_IMPORT_TEXT_TOO_LARGE`
+- `RESUME_IMPORT_FAILED`
+
+## Pruebas
+
+Unitarias:
+
+- `tests/unit/resume-file-import.test.ts`
+
+E2E:
+
+- `tests/e2e/resume-file-import-flow.mjs`
+
+Scripts:
+
+- `npm run web:e2e:import`
+- `npm run web:e2e:import:headed`
+
+Los E2E generan archivos DOCX/PDF sintéticos en directorios temporales y los eliminan al terminar.

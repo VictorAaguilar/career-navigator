@@ -7,6 +7,8 @@ Esta guía describe cómo probar la demo local del CV Tailoring Agent sin subir 
 La demo permite:
 
 - pegar texto de currículum;
+- importar un currículum DOCX;
+- importar un PDF con texto seleccionable;
 - pegar texto de oferta laboral;
 - ejecutar un análisis determinista local;
 - revisar requisitos y evidencias encontradas;
@@ -17,7 +19,7 @@ La demo permite:
 
 La demo no permite todavía:
 
-- subir archivos DOCX o PDF;
+- importar archivos de oferta laboral;
 - leer archivos con OCR;
 - usar un LLM;
 - guardar sesiones;
@@ -48,7 +50,7 @@ http://localhost:5173/
 ## Flujo Manual
 
 1. Pulsa `Comenzar`.
-2. Pega el texto del currículum.
+2. Pega el texto del currículum o importa un DOCX/PDF en la etapa `Currículum`.
 3. Pega el texto de la oferta laboral.
 4. Ejecuta el análisis determinista.
 5. Revisa requisitos y evidencias.
@@ -60,6 +62,25 @@ http://localhost:5173/
 ## Casos Esperados
 
 Si el currículum está vacío, la demo no avanza desde la etapa de currículum.
+
+Si importas un archivo, el texto extraído aparece en el mismo textarea. Debes revisarlo y corregirlo antes de continuar.
+
+El formato visual del archivo no se conserva. La demo extrae texto, párrafos y señales básicas; no replica columnas, colores, imágenes ni diseño exacto.
+
+Los PDFs escaneados no están soportados. Si no hay texto seleccionable, la demo muestra que esta versión no incluye OCR y permite pegar el contenido manualmente.
+
+Los PDFs protegidos con contraseña o dañados muestran un error seguro. No se muestran rutas, contenido del CV ni mensajes internos.
+
+Límites de importación:
+
+- archivo máximo: 8 MiB;
+- PDF máximo: 50 páginas;
+- DOCX máximo: 200 entradas internas;
+- XML DOCX máximo: 8 MiB;
+- texto extraído máximo: 120.000 caracteres;
+- texto para continuar el análisis: 24.000 caracteres.
+
+Si el texto importado supera 24.000 caracteres, queda editable en el textarea, pero debes reducirlo antes de continuar.
 
 Si la oferta está vacía, la demo no avanza desde la etapa de oferta.
 
@@ -79,7 +100,7 @@ La interfaz muestra el aviso:
 Tus datos no se almacenan en esta versión.
 ```
 
-La demo mantiene el estado en memoria del navegador. No usa `localStorage`, `sessionStorage`, cookies, red, backend, telemetría ni persistencia.
+La demo mantiene el estado en memoria del navegador. No usa `localStorage`, `sessionStorage`, cookies, red, backend, telemetría ni persistencia. Los archivos importados se procesan desde sus bytes locales y no se suben a terceros.
 
 ## Prueba E2E
 
@@ -93,6 +114,18 @@ También existe modo visible:
 
 ```bash
 npm run web:e2e:headed
+```
+
+El flujo de importación se prueba con:
+
+```bash
+npm run web:e2e:import
+```
+
+Y en modo visible:
+
+```bash
+npm run web:e2e:import:headed
 ```
 
 El script levanta Vite en `127.0.0.1:5174`, usa datos sintéticos, descarga el DOCX en un directorio temporal del sistema y elimina ese directorio al terminar.
