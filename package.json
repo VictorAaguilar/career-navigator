@@ -35,7 +35,9 @@
     "web:e2e:import": "node tests/e2e/resume-file-import-flow.mjs",
     "web:e2e:import:headed": "node tests/e2e/resume-file-import-flow.mjs --headed",
     "web:e2e:structure": "node tests/e2e/structured-resume-flow.mjs",
-    "web:e2e:structure:headed": "node tests/e2e/structured-resume-flow.mjs --headed"
+    "web:e2e:structure:headed": "node tests/e2e/structured-resume-flow.mjs --headed",
+    "web:e2e:targeting": "node tests/e2e/structured-targeting-flow.mjs",
+    "web:e2e:targeting:headed": "node tests/e2e/structured-targeting-flow.mjs --headed"
   },
   "keywords": [
     "ai",

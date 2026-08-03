@@ -7,7 +7,7 @@ import JSZip from "jszip";
 import { launchBrowserWithFallback } from "./tailoring-demo-browser-options.mjs";
 
 const headed = process.argv.includes("--headed");
-const port = 5174;
+const port = 5177;
 const baseUrl = `http://127.0.0.1:${port}/`;
 
 const structuredCv = [
@@ -93,7 +93,7 @@ async function waitForServer() {
 }
 
 async function run() {
-  const downloadDir = await mkdtemp(join(tmpdir(), "career-navigator-structure-download-"));
+  const downloadDir = await mkdtemp(join(tmpdir(), "career-navigator-targeting-download-"));
   let browser;
   try {
     ({ browser } = await launchBrowserWithFallback({
@@ -123,9 +123,7 @@ async function run() {
     await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204, body: "" }));
 
     await waitForServer();
-    await runStructuredScenario(page, downloadDir);
-    await runPlainFallbackScenario(page);
-    await runInvalidationScenario(page);
+    await runTargetingScenario(page, downloadDir);
 
     const ariaCurrentCount = await page.locator('[aria-current="step"]').count();
     if (ariaCurrentCount !== 1) {
@@ -143,87 +141,55 @@ async function run() {
   }
 }
 
-async function runStructuredScenario(page, downloadDir) {
+async function runTargetingScenario(page, downloadDir) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Comenzar" }).click();
   await page.getByRole("textbox", { name: "Currículum" }).fill(structuredCv);
   await page.getByRole("button", { name: "Detectar estructura" }).click();
   await expectText(page, "secciones detectadas");
-  await expectText(page, "Confianza alta");
-  await expectText(page, "PERFIL PROFESIONAL");
   await expectText(page, "EXPERIENCIA");
-  await expectText(page, "FORMACIÓN");
-  await expectText(page, "HABILIDADES");
-  await expectText(page, "IDIOMAS");
-
-  const firstSectionSelect = page.getByLabel("Tipo de sección").first();
-  await firstSectionSelect.selectOption("projects");
-  await expectSelectValue(firstSectionSelect, "projects");
-  await firstSectionSelect.selectOption("other");
-  await expectSelectValue(firstSectionSelect, "other");
   await page.getByRole("button", { name: "Confirmar estructura" }).click();
-  await expectText(page, "Modo estructurado seleccionado");
   await page.getByRole("button", { name: "Continuar" }).click();
 
   await page.getByRole("textbox", { name: "Oferta laboral" }).fill(offerText);
   await page.getByRole("button", { name: "Continuar" }).click();
   await page.getByRole("button", { name: "Ejecutar análisis determinista" }).click();
-  await expectText(page, "No cubiertos");
   await page.getByRole("button", { name: "Continuar" }).click();
+
+  await expectText(page, "Ubicación de la evidencia");
+  await expectText(page, "Experiencia · bloque 2");
+  await expectText(page, "Experiencia · bloque 4");
   await expectText(page, "Docker");
   await expectText(page, "No se encontró evidencia en el currículum.");
   await page.getByRole("button", { name: "Continuar" }).click();
 
-  await completeReviewAndDownload(page, downloadDir, "TypeScript");
-}
+  await expectText(page, "Ubicación objetivo");
+  await expectText(page, "Por qué se propone aquí");
+  await expectText(page, "Este bloque contiene la evidencia relacionada con el requisito.");
+  await assertNoVisibleTechnicalIds(page);
 
-async function runPlainFallbackScenario(page) {
-  await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
-  await page.getByRole("textbox", { name: "Currículum" }).fill("React TypeScript Vitest Git");
-  await page.getByRole("button", { name: "Detectar estructura" }).click();
-  await expectText(page, "No se detectaron encabezados seguros");
-  await page.getByRole("button", { name: "Usar análisis de texto plano" }).click();
-  await expectText(page, "Modo de texto plano seleccionado");
   await page.getByRole("button", { name: "Continuar" }).click();
-  await page.getByRole("textbox", { name: "Oferta laboral" }).fill(offerText);
-  await page.getByRole("button", { name: "Continuar" }).click();
-  await page.getByRole("button", { name: "Ejecutar análisis determinista" }).click();
-  await expectText(page, "Requisitos");
-}
-
-async function runInvalidationScenario(page) {
-  await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
-  const resumeBox = page.getByRole("textbox", { name: "Currículum" });
-  await resumeBox.fill("EXPERIENCIA\nReact");
-  await page.getByRole("button", { name: "Detectar estructura" }).click();
-  await page.getByRole("button", { name: "Confirmar estructura" }).click();
-  await expectText(page, "Modo estructurado seleccionado");
-  await resumeBox.fill("EXPERIENCIA\nReact\nVitest");
-  await expectText(page, "Detecta y confirma la estructura");
-  if (await page.getByRole("button", { name: "Continuar" }).isEnabled()) {
-    throw new Error("EXPECTED_CONTINUE_DISABLED_AFTER_STRUCTURE_INVALIDATION");
+  await expectText(page, "Ubicación objetivo");
+  const acceptOptions = page.getByLabel("Aceptar");
+  const rejectOptions = page.getByLabel("Rechazar");
+  const optionCount = await acceptOptions.count();
+  if (optionCount === 0) {
+    throw new Error("EXPECTED_TARGETING_PROPOSALS");
   }
-}
-
-async function completeReviewAndDownload(page, downloadDir, expectedDocxText) {
-  const bodyAfterProposals = await page.locator("body").innerText();
-  if (bodyAfterProposals.includes("No hay propuestas aplicables")) {
-    await page.getByRole("button", { name: "Continuar" }).click();
-    await page.getByRole("button", { name: "Generar vista previa sin cambios" }).click();
-  } else {
-    await page.getByRole("button", { name: "Continuar" }).click();
-    const rejectOptions = page.getByLabel("Rechazar");
-    const rejectCount = await rejectOptions.count();
-    for (let index = 0; index < rejectCount; index += 1) {
-      await rejectOptions.nth(index).check();
-    }
-    await page.getByRole("button", { name: "Aplicar decisiones aprobadas" }).click();
+  await acceptOptions.first().check();
+  for (let index = 1; index < optionCount; index += 1) {
+    await rejectOptions.nth(index).check();
   }
-
+  await page.getByRole("button", { name: "Aplicar decisiones aprobadas" }).click();
   await page.getByRole("button", { name: "Continuar" }).click();
-  await expectText(page, "Rechazadas");
+
+  await expectText(page, "Cambios aplicados");
+  await expectText(page, "Aceptada");
+  if (optionCount > 1) {
+    await expectText(page, "Cambios no aplicados");
+    await expectText(page, "Rechazada");
+  }
+  await assertNoVisibleTechnicalIds(page);
   await page.getByRole("button", { name: "Continuar" }).click();
 
   const downloadPromise = page.waitForEvent("download");
@@ -235,26 +201,27 @@ async function completeReviewAndDownload(page, downloadDir, expectedDocxText) {
   const downloadPath = join(downloadDir, download.suggestedFilename());
   await download.saveAs(downloadPath);
   const content = await readFile(downloadPath);
-  if (content.byteLength === 0) {
-    throw new Error("EMPTY_DOCX_DOWNLOAD");
-  }
   const zip = await JSZip.loadAsync(content);
   const documentXml = await zip.file("word/document.xml")?.async("string");
-  if (!documentXml?.includes(expectedDocxText) || documentXml.includes("proposalId")) {
-    throw new Error("DOCX_STRUCTURE_CONTENT_ASSERTION_FAILED");
+  if (
+    !documentXml?.includes("TypeScript") ||
+    documentXml.includes("Ubicación") ||
+    documentXml.includes("targetLocation") ||
+    documentXml.includes("proposalId")
+  ) {
+    throw new Error("DOCX_TARGETING_METADATA_ASSERTION_FAILED");
+  }
+}
+
+async function assertNoVisibleTechnicalIds(page) {
+  const text = await page.locator("body").innerText();
+  if (/section-\d|block-\d|proposal\||requirement_\d|evidence_\d/u.test(text)) {
+    throw new Error("VISIBLE_TECHNICAL_ID_FOUND");
   }
 }
 
 async function expectText(page, text) {
   await page.getByText(text, { exact: false }).first().waitFor({ timeout: 15_000 });
-}
-
-async function expectSelectValue(locator, value) {
-  await locator.evaluate((element, expected) => {
-    if (!(element instanceof HTMLSelectElement) || element.value !== expected) {
-      throw new Error(`EXPECTED_SELECT_VALUE ${expected}`);
-    }
-  }, value);
 }
 
 try {
