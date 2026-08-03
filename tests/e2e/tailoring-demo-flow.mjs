@@ -118,7 +118,7 @@ async function run() {
     await expectText(page, "No cubiertos");
     await page.getByRole("button", { name: "Continuar" }).click();
     await expectText(page, "Docker");
-    await expectText(page, "No hay evidencia en el currículum.");
+    await expectText(page, "No se encontró evidencia en el currículum.");
     await page.getByRole("button", { name: "Continuar" }).click();
 
     const bodyAfterProposals = await page.locator("body").innerText();
