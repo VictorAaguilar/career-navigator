@@ -53,6 +53,19 @@ Abre la URL que muestre Vite, normalmente:
 http://localhost:5173/
 ```
 
+Para validar el Release Candidate contra el build de producción:
+
+```bash
+npm run web:build
+npm run preview --workspace @career-navigator/web -- --host 127.0.0.1 --port 4178
+```
+
+En otra terminal abre:
+
+```text
+http://127.0.0.1:4178/
+```
+
 ## Flujo Manual
 
 1. Pulsa `Comenzar`.
@@ -67,7 +80,7 @@ http://localhost:5173/
 10. Revisa las propuestas.
 11. Aprueba, rechaza o edita cada propuesta.
 12. Genera la vista previa.
-13. Descarga el DOCX.
+13. Pulsa `Descargar currículum adaptado`.
 
 ## Revisión Estructural
 
@@ -230,7 +243,32 @@ Y en modo visible:
 npm run web:e2e:targeting:headed
 ```
 
-Los scripts levantan Vite en puertos locales, usan datos sintéticos, descargan el DOCX en un directorio temporal del sistema y eliminan ese directorio al terminar.
+El flujo Release Candidate se ejecuta contra `vite preview` y requiere haber generado antes el build:
+
+```bash
+npm run web:build
+npm run web:e2e:rc
+```
+
+También existe modo visible:
+
+```bash
+npm run web:e2e:rc:headed
+```
+
+El presupuesto de bundle inicial se comprueba con:
+
+```bash
+npm run web:bundle:check
+```
+
+La validación agregada de RC se ejecuta con:
+
+```bash
+npm run release:check
+```
+
+Los scripts levantan Vite o Vite Preview en puertos locales, usan datos sintéticos, descargan el DOCX en un directorio temporal del sistema y eliminan ese directorio al terminar.
 
 El E2E intenta canales de Playwright en este orden: `chromium`, `chrome`, `msedge`. No requiere `chromium-headless-shell`.
 
@@ -251,3 +289,11 @@ npx.cmd --no-install playwright install --no-shell chromium
 ```
 
 Como alternativa, instala Google Chrome o Microsoft Edge y selecciona `chrome` o `msedge` con `PLAYWRIGHT_BROWSER_CHANNEL`.
+
+Estado de navegadores para RC1:
+
+- Chrome: aprobado.
+- Microsoft Edge: aprobado.
+- Chromium completo: soportado por el runner, pero no disponible en este entorno sin instalación manual.
+- Firefox: no aprobado en RC1.
+- Safari: no probado en RC1.
