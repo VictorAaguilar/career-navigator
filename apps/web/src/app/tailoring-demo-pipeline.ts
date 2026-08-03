@@ -25,6 +25,19 @@ import type { TailoringPlan } from "../../../../src/schemas/tailoring.js";
 import type { TailoringTargetingResult } from "../../../../src/schemas/targeting.js";
 import { TAILORING_DEMO_LIMITS } from "./tailoring-demo-limits.js";
 import {
+  buildResumeLocationIndex,
+  formatResumeLocationDetail,
+  formatResumeLocationLabel,
+  formatResumeLocationWarning,
+  formatTargetingReasonLabel,
+  reasonCodesForTargetLocation,
+  resolveBlockLocation,
+  resolveEvidenceLocation,
+  resolveTargetLocation,
+  type ResumeLocationIndex,
+  type ResumeLocationReference,
+} from "./tailoring-location-explanations.js";
+import {
   parseJobText,
   parseResumeText,
   significantTokens,
@@ -45,6 +58,7 @@ export type DemoAnalysisResult = Readonly<{
   scoringResult: ScoringResult;
   tailoringPlan: TailoringPlan;
   targetingResult: TailoringTargetingResult;
+  locationIndex: ResumeLocationIndex;
   rewriteProposalResult: RewriteProposalResult;
   generationBatch: RewriteGenerationBatch;
   candidateSubmissions: readonly RewriteCandidateSubmission[];
@@ -59,8 +73,23 @@ export type DemoRequirementRow = Readonly<{
   status: "met" | "partially_met" | "not_met" | "unknown";
   label: string;
   evidenceTexts: readonly string[];
+  evidenceLocations: readonly DemoEvidenceLocationRow[];
   explanation: string;
   contribution: number;
+}>;
+
+export type DemoEvidenceLocationRow = Readonly<{
+  evidenceText: string;
+  supportLabel: string;
+  location: DemoLocationDisplay;
+}>;
+
+export type DemoLocationDisplay = Readonly<{
+  source: ResumeLocationReference["source"];
+  status: ResumeLocationReference["status"];
+  label: string;
+  detail: string;
+  warningLabels: readonly string[];
 }>;
 
 export type DemoProposalRow = Readonly<{
@@ -70,6 +99,8 @@ export type DemoProposalRow = Readonly<{
   blockId: string;
   requirementText: string;
   evidenceTexts: readonly string[];
+  targetLocation: DemoLocationDisplay;
+  targetingReasonLabels: readonly string[];
   originalText: string;
   proposedText: string;
   currentCandidateText: string;
@@ -86,6 +117,20 @@ export type DemoAppliedResult = Readonly<{
   reviewDecisionBatch: RewriteReviewDecisionBatch;
   applicationResult: ApprovedRewriteApplicationResult;
   exportModel: ResumeExportModel;
+  traceabilityRows: readonly DemoPreviewTraceabilityRow[];
+}>;
+
+export type DemoPreviewTraceabilityRow = Readonly<{
+  validationId: string;
+  proposalId: string;
+  decision: DemoReviewDecisionType;
+  decisionLabel: string;
+  outcome: "applied" | "not_applied";
+  outcomeLabel: string;
+  requirementText: string;
+  location: DemoLocationDisplay;
+  beforeText: string;
+  afterText: string;
 }>;
 
 export function runTailoringDemoAnalysis(resumeText: string, jobText: string): DemoAnalysisResult {
@@ -120,6 +165,7 @@ export function runTailoringDemoAnalysisWithParsedResume(
     tailoringPlan,
     resumeDocument: parsedResume.resumeDocument,
   });
+  const locationIndex = buildResumeLocationIndex(parsedResume.resumeDocument);
   const rewriteProposalResult = buildRewriteProposals({
     tailoringPlan,
     targetingResult,
@@ -147,12 +193,26 @@ export function runTailoringDemoAnalysisWithParsedResume(
     scoringResult,
     tailoringPlan,
     targetingResult,
+    locationIndex,
     rewriteProposalResult,
     generationBatch,
     candidateSubmissions,
     validationBatch,
-    requirementRows: buildRequirementRows(parsedOffer.offer, jobMatchResult, scoringResult, parsedResume.evidences),
-    proposalRows: buildProposalRows(parsedOffer.offer, parsedResume.evidences, generationBatch, validationBatch),
+    requirementRows: buildRequirementRows(
+      parsedOffer.offer,
+      jobMatchResult,
+      scoringResult,
+      parsedResume.evidences,
+      locationIndex,
+    ),
+    proposalRows: buildProposalRows(
+      parsedOffer.offer,
+      parsedResume.evidences,
+      generationBatch,
+      validationBatch,
+      targetingResult,
+      locationIndex,
+    ),
   });
 }
 
@@ -180,6 +240,8 @@ export function rebuildValidationWithCandidates(
       analysis.parsedResume.evidences,
       analysis.generationBatch,
       validationBatch,
+      analysis.targetingResult,
+      analysis.locationIndex,
     ),
   });
 }
@@ -208,8 +270,9 @@ export function applyTailoringDemoReview(
     reviewDecisionBatch,
   });
   const exportModel = buildResumeExportModel({ applicationResult });
+  const traceabilityRows = buildPreviewTraceabilityRows(analysis, reviewDecisionBatch, applicationResult);
 
-  return deepFreeze({ reviewDecisionBatch, applicationResult, exportModel });
+  return deepFreeze({ reviewDecisionBatch, applicationResult, exportModel, traceabilityRows });
 }
 
 export function isReviewComplete(analysis: DemoAnalysisResult | null, decisions: DemoReviewState): boolean {
@@ -295,21 +358,31 @@ function buildRequirementRows(
   jobMatchResult: JobMatchResult,
   scoringResult: ScoringResult,
   evidences: Evidence[],
+  locationIndex: ResumeLocationIndex,
 ): DemoRequirementRow[] {
   const requirementsById = new Map(offer.requirements.map((requirement) => [requirement.id, requirement]));
   const scoresById = new Map(scoringResult.requirementScores.map((score) => [score.requirementId, score]));
   const evidencesById = new Map(evidences.map((evidence) => [evidence.id, evidence]));
-  return jobMatchResult.requirementMatches.map((match) => ({
-    requirementId: match.requirementId,
-    text: requirementsById.get(match.requirementId)?.originalText ?? match.requirementId,
-    status: match.status,
-    label: statusLabel(match.status),
-    evidenceTexts: match.matchedEvidenceIds
-      .map((evidenceId) => evidencesById.get(evidenceId)?.description)
-      .filter((value): value is string => value !== undefined),
-    explanation: match.explanation,
-    contribution: scoresById.get(match.requirementId)?.normalizedContribution ?? 0,
-  }));
+  return jobMatchResult.requirementMatches.map((match) => {
+    const evidenceLocations = match.matchedEvidenceIds
+      .map((evidenceId) => evidencesById.get(evidenceId))
+      .filter((evidence): evidence is Evidence => evidence !== undefined)
+      .map((evidence) => ({
+        evidenceText: evidence.description,
+        supportLabel: match.status === "partially_met" ? "Evidencia parcial" : "Evidencia relacionada",
+        location: buildLocationDisplay(resolveEvidenceLocation(evidence, locationIndex)),
+      }));
+    return {
+      requirementId: match.requirementId,
+      text: requirementsById.get(match.requirementId)?.originalText ?? match.requirementId,
+      status: match.status,
+      label: statusLabel(match.status),
+      evidenceTexts: evidenceLocations.map((location) => location.evidenceText),
+      evidenceLocations,
+      explanation: match.explanation,
+      contribution: scoresById.get(match.requirementId)?.normalizedContribution ?? 0,
+    };
+  });
 }
 
 function buildProposalRows(
@@ -317,12 +390,20 @@ function buildProposalRows(
   evidences: Evidence[],
   generationBatch: RewriteGenerationBatch,
   validationBatch: RewriteCandidateValidationBatch,
+  targetingResult: TailoringTargetingResult,
+  locationIndex: ResumeLocationIndex,
 ): DemoProposalRow[] {
   const requirementsById = new Map(offer.requirements.map((requirement) => [requirement.id, requirement]));
   const evidencesById = new Map(evidences.map((evidence) => [evidence.id, evidence]));
   const requestsById = new Map(generationBatch.requests.map((request) => [request.requestId, request]));
+  const resolutionsById = new Map(targetingResult.resolutions.map((resolution) => [resolution.resolutionId, resolution]));
   return validationBatch.results.map((result) => {
     const request = requestsById.get(result.requestId);
+    const resolution = resolutionsById.get(result.resolutionId);
+    const targetReference = resolution === undefined
+      ? resolveBlockLocation(locationIndex, result.blockId)
+      : resolveTargetLocation(resolution, locationIndex);
+    const targetLocation = buildLocationDisplay(targetReference);
     const requirementText = request?.requirementIds
       .map((requirementId) => requirementsById.get(requirementId)?.originalText)
       .filter((value): value is string => value !== undefined)
@@ -336,6 +417,9 @@ function buildProposalRows(
       evidenceTexts: (request?.evidenceIds ?? [])
         .map((evidenceId) => evidencesById.get(evidenceId)?.description)
         .filter((value): value is string => value !== undefined),
+      targetLocation,
+      targetingReasonLabels: reasonCodesForTargetLocation(targetReference)
+        .map((code) => formatTargetingReasonLabel(code, targetReference)),
       originalText: result.originalText,
       proposedText: request ? proposeCandidateText(result.originalText, [requirementText]) : result.candidateText,
       currentCandidateText: result.candidateText,
@@ -344,6 +428,58 @@ function buildProposalRows(
       rationale: "Propuesta generada solo a partir del bloque original y evidencia enlazada.",
     };
   });
+}
+
+function buildPreviewTraceabilityRows(
+  analysis: DemoAnalysisResult,
+  reviewDecisionBatch: RewriteReviewDecisionBatch,
+  applicationResult: ApprovedRewriteApplicationResult,
+): DemoPreviewTraceabilityRow[] {
+  const decisionsByValidationId = new Map(
+    reviewDecisionBatch.decisions.map((decision) => [decision.validationId, decision]),
+  );
+  const changesByValidationId = new Map(
+    applicationResult.changes.map((change) => [change.validationId, change]),
+  );
+
+  return analysis.proposalRows.map((proposal) => {
+    const decision = decisionsByValidationId.get(proposal.validationId);
+    const change = changesByValidationId.get(proposal.validationId);
+    const outcome = change === undefined ? "not_applied" : "applied";
+    const decisionType = decision?.decision ?? "changes_requested";
+    return {
+      validationId: proposal.validationId,
+      proposalId: proposal.proposalId,
+      decision: decisionType,
+      decisionLabel: decisionLabel(decisionType, proposal),
+      outcome,
+      outcomeLabel: outcome === "applied" ? "Cambio aplicado" : "No aplicado",
+      requirementText: proposal.requirementText,
+      location: proposal.targetLocation,
+      beforeText: change?.beforeText ?? proposal.originalText,
+      afterText: change?.afterText ?? proposal.currentCandidateText,
+    };
+  });
+}
+
+function buildLocationDisplay(location: ResumeLocationReference): DemoLocationDisplay {
+  return {
+    source: location.source,
+    status: location.status,
+    label: formatResumeLocationLabel(location),
+    detail: formatResumeLocationDetail(location),
+    warningLabels: location.warningCodes.map(formatResumeLocationWarning),
+  };
+}
+
+function decisionLabel(decision: DemoReviewDecisionType, proposal: DemoProposalRow): string {
+  if (decision === "approved") {
+    return proposal.currentCandidateText === proposal.proposedText ? "Aceptada" : "Editada y aceptada";
+  }
+  if (decision === "rejected") {
+    return "Rechazada";
+  }
+  return "Cambios solicitados";
 }
 
 function statusLabel(status: RequirementMatchResult["status"]): string {
