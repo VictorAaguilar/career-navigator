@@ -40,7 +40,11 @@
     "web:e2e:targeting:headed": "node tests/e2e/structured-targeting-flow.mjs --headed",
     "web:e2e:rc": "node tests/e2e/release-candidate-flow.mjs",
     "web:e2e:rc:headed": "node tests/e2e/release-candidate-flow.mjs --headed",
+    "web:build:pages": "node tests/release/run-with-pages-base.mjs web:build",
+    "web:e2e:pages": "node tests/release/run-pages-e2e.mjs",
     "web:bundle:check": "node tests/release/web-bundle-budget.mjs",
+    "web:pages:artifact-check": "node tests/release/pages-artifact-check.mjs",
+    "web:pages:smoke": "node tests/release/github-pages-smoke.mjs",
     "release:check": "node tests/release/release-check.mjs"
   },
   "keywords": [

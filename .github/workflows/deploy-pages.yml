@@ -1,0 +1,138 @@
+name: Deploy Career Navigator RC to GitHub Pages
+
+on:
+  pull_request:
+    branches: [universal-redesign]
+  push:
+    branches: [universal-redesign]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
+  PLAYWRIGHT_BROWSER_CHANNEL: chrome
+  IS_DEPLOYABLE_REF: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/universal-redesign') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/universal-redesign') }}
+
+jobs:
+  validate-and-build:
+    name: Validate and build Pages artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        # v7.0.0 pinned so PR validation never follows a mutable tag.
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        # v6.4.0 pinned; Node 24 matches the validated RC major.
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Typecheck root
+        run: npm run typecheck
+
+      - name: Typecheck web
+        run: npm run web:typecheck
+
+      - name: Build web for GitHub Pages
+        # Pages is a project site, so production assets must live below /career-navigator/.
+        run: npm run web:build
+
+      - name: Check bundle budget
+        run: npm run web:bundle:check
+
+      - name: Check Pages artifact before browser smoke
+        run: npm run web:pages:artifact-check
+
+      - name: Verify Chrome channel availability
+        run: google-chrome --version || (echo "GITHUB_PAGES_CHROME_NOT_AVAILABLE" && exit 1)
+
+      - name: Run Pages E2E against local preview
+        run: npm run web:e2e:pages
+
+      - name: Re-check bundle budget after E2E build
+        run: npm run web:bundle:check
+
+      - name: Re-check Pages artifact after E2E build
+        run: npm run web:pages:artifact-check
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
+
+      - name: Configure GitHub Pages
+        # v6.0.0 pinned. Pull requests validate only and never configure Pages.
+        if: env.IS_DEPLOYABLE_REF == 'true'
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
+
+      - name: Upload Pages artifact
+        # v5.0.0 pinned. Only apps/web/dist is uploaded.
+        if: env.IS_DEPLOYABLE_REF == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
+        with:
+          path: apps/web/dist
+          retention-days: 1
+
+      - name: Explain skipped deployment
+        if: env.IS_DEPLOYABLE_REF != 'true'
+        run: echo "GITHUB_PAGES_DEPLOY_SKIPPED: pull_request and non-universal-redesign refs validate without deploying."
+
+  deploy:
+    name: Deploy Pages artifact
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/universal-redesign') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/universal-redesign') }}
+    needs: validate-and-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        # v5.0.0 pinned. Elevated Pages permissions are isolated to this job.
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128
+
+  public-smoke:
+    name: Public Pages smoke
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/universal-redesign') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/universal-redesign') }}
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout smoke runner
+        # v7.0.0 pinned so the smoke script comes from the deployed commit.
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        # v6.4.0 pinned.
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+
+      - name: Smoke deployed Pages URL
+        env:
+          DEPLOYED_SITE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: node tests/release/github-pages-smoke.mjs
