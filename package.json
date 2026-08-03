@@ -37,7 +37,11 @@
     "web:e2e:structure": "node tests/e2e/structured-resume-flow.mjs",
     "web:e2e:structure:headed": "node tests/e2e/structured-resume-flow.mjs --headed",
     "web:e2e:targeting": "node tests/e2e/structured-targeting-flow.mjs",
-    "web:e2e:targeting:headed": "node tests/e2e/structured-targeting-flow.mjs --headed"
+    "web:e2e:targeting:headed": "node tests/e2e/structured-targeting-flow.mjs --headed",
+    "web:e2e:rc": "node tests/e2e/release-candidate-flow.mjs",
+    "web:e2e:rc:headed": "node tests/e2e/release-candidate-flow.mjs --headed",
+    "web:bundle:check": "node tests/release/web-bundle-budget.mjs",
+    "release:check": "node tests/release/release-check.mjs"
   },
   "keywords": [
     "ai",
