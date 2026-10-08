@@ -74,6 +74,7 @@ const serverArgs = process.platform === "win32" ? [
 const server = spawn(serverCommand, serverArgs, {
   cwd: process.cwd(),
   stdio: ["ignore", "pipe", "pipe"],
+  detached: process.platform !== "win32",
   windowsHide: true,
 });
 
@@ -505,5 +506,9 @@ function stopServer() {
     });
     return;
   }
-  server.kill("SIGTERM");
+  try {
+    process.kill(-server.pid, "SIGTERM");
+  } catch {
+    server.kill("SIGTERM");
+  }
 }

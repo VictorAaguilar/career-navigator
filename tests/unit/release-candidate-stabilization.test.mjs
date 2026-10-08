@@ -179,6 +179,14 @@ describe("Release Candidate stabilization", () => {
     expect(source).not.toContain("npm.cmd run dev");
   });
 
+  it("terminates the Linux preview process group so CI does not hang after E2E completion", () => {
+    const source = readRepoFile("tests/e2e/release-candidate-flow.mjs");
+
+    expect(source).toContain('detached: process.platform !== "win32"');
+    expect(source).toContain('process.kill(-server.pid, "SIGTERM")');
+    expect(source).toContain('server.kill("SIGTERM")');
+  });
+
   it("uses channel-based Playwright launch fallback without custom executable paths", () => {
     const source = readRepoFile("tests/e2e/release-candidate-flow.mjs");
     const browserOptions = readRepoFile("tests/e2e/tailoring-demo-browser-options.mjs");
