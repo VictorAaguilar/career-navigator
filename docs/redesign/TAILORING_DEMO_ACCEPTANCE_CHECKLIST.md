@@ -1,6 +1,6 @@
 # Tailoring Demo Acceptance Checklist
 
-Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o despliegue.
+Checklist para validar el MVP end-to-end antes de incorporar LLM, backend, persistencia o uso con datos reales.
 
 ## Navegación
 
@@ -137,6 +137,7 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend o desp
 - [ ] `npm run web:build:pages` genera `index.html` con `/career-navigator/assets/...`.
 - [ ] `npm run web:e2e:pages` pasa contra preview local bajo `/career-navigator/`.
 - [ ] `npm run web:pages:artifact-check` confirma que solo se publica `apps/web/dist`.
+- [ ] `node tests/release/github-pages-smoke.mjs` pasa contra `https://victoraaguilar.github.io/career-navigator/`.
 - [ ] `npm run release:check` pasa tras `npm ci`.
 - [ ] El fallback automático intenta `chromium`, luego `chrome`, luego `msedge`.
 - [ ] `PLAYWRIGHT_BROWSER_CHANNEL` acepta únicamente `chromium`, `chrome` o `msedge`.
