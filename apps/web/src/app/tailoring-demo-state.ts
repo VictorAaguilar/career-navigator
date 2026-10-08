@@ -5,6 +5,10 @@ import type {
   ResumeImportSource,
   ResumeImportWarningCode,
 } from "./resume-file-import-contract.js";
+import type {
+  JobImportErrorCode,
+  JobImportSource,
+} from "./job-file-import-contract.js";
 import { createTailoringSession, type TailoringSession } from "./tailoring-session.js";
 import { tailoringSessionReducer } from "./tailoring-session-reducer.js";
 import type { WorkflowStageId } from "./workflow-stages.js";
@@ -50,6 +54,13 @@ export type ResumeImportState = Readonly<
   | { status: "error"; source: ResumeImportSource; warnings: readonly []; errorCode: ResumeImportErrorCode }
 >;
 
+export type JobImportState = Readonly<
+  | { status: "idle"; source: "manual"; errorCode: null }
+  | { status: "reading"; source: Exclude<JobImportSource, "manual">; errorCode: null }
+  | { status: "ready"; source: Exclude<JobImportSource, "manual">; errorCode: null }
+  | { status: "error"; source: JobImportSource; errorCode: JobImportErrorCode }
+>;
+
 export type ResumeStructureState = Readonly<
   | { status: "idle"; mode: null; draft: null; warnings: readonly []; errorCode: null }
   | {
@@ -81,6 +92,7 @@ export type TailoringDemoState = Readonly<{
   resumeImport: ResumeImportState;
   resumeStructure: ResumeStructureState;
   jobText: string;
+  jobImport: JobImportState;
   analysis: DemoAnalysisResult | null;
   reviewDecisions: DemoReviewState;
   appliedResult: DemoAppliedResult | null;
@@ -107,6 +119,10 @@ export type TailoringDemoAction =
   | { type: "clear_resume_structure" }
   | { type: "set_job_text"; value: string }
   | { type: "clear_job_text" }
+  | { type: "job_import_started"; source: Exclude<JobImportSource, "manual"> }
+  | { type: "job_import_succeeded"; source: Exclude<JobImportSource, "manual">; text: string }
+  | { type: "job_import_failed"; source: JobImportSource; errorCode: JobImportErrorCode }
+  | { type: "job_import_cleared" }
   | { type: "run_analysis" }
   | { type: "set_review_decision"; validationId: string; decision: DemoReviewDecisionType }
   | { type: "edit_proposal"; validationId: string; value: string }
@@ -132,6 +148,10 @@ const allowedActionTypes = Object.freeze([
   "clear_resume_structure",
   "set_job_text",
   "clear_job_text",
+  "job_import_started",
+  "job_import_succeeded",
+  "job_import_failed",
+  "job_import_cleared",
   "run_analysis",
   "set_review_decision",
   "edit_proposal",
@@ -151,6 +171,7 @@ export function createTailoringDemoState(): TailoringDemoState {
     resumeImport: idleResumeImport(),
     resumeStructure: idleResumeStructure(),
     jobText: "",
+    jobImport: idleJobImport(),
     analysis: null,
     reviewDecisions: {},
     appliedResult: null,
@@ -342,6 +363,7 @@ export function tailoringDemoReducer(
     return freezeState({
       ...state,
       jobText: action.value,
+      jobImport: idleJobImport(),
       ...emptyAnalysisState(),
       visibleError: null,
     });
@@ -351,6 +373,45 @@ export function tailoringDemoReducer(
     return freezeState({
       ...state,
       jobText: "",
+      jobImport: idleJobImport(),
+      ...emptyAnalysisState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "job_import_started") {
+    return freezeState({
+      ...state,
+      jobImport: { status: "reading", source: action.source, errorCode: null },
+      ...emptyAnalysisState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "job_import_succeeded") {
+    return freezeState({
+      ...state,
+      jobText: action.text,
+      jobImport: { status: "ready", source: action.source, errorCode: null },
+      ...emptyAnalysisState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "job_import_failed") {
+    return freezeState({
+      ...state,
+      jobImport: { status: "error", source: action.source, errorCode: action.errorCode },
+      ...emptyAnalysisState(),
+      visibleError: null,
+    });
+  }
+
+  if (action.type === "job_import_cleared") {
+    return freezeState({
+      ...state,
+      jobText: "",
+      jobImport: idleJobImport(),
       ...emptyAnalysisState(),
       visibleError: null,
     });
@@ -580,6 +641,10 @@ function idleDocx(): TailoringDemoDocxState {
 
 function idleResumeImport(): ResumeImportState {
   return { status: "idle", source: "manual", warnings: [], errorCode: null };
+}
+
+function idleJobImport(): JobImportState {
+  return { status: "idle", source: "manual", errorCode: null };
 }
 
 function idleResumeStructure(): ResumeStructureState {

@@ -10,6 +10,7 @@ export const TAILORING_DEMO_LIMITS = Object.freeze({
   resumeImportDocxMaxEntries: 200,
   resumeImportDocxMaxXmlBytes: 8 * 1024 * 1024,
   resumeImportRawTextMaxLength: 120_000,
+  jobImportFileMaxBytes: 512 * 1024,
 } as const);
 
 export const TAILORING_DEMO_LIMIT_LABELS = Object.freeze({
@@ -24,4 +25,5 @@ export const TAILORING_DEMO_LIMIT_LABELS = Object.freeze({
   resumeImportDocxMaxEntries: "200 entradas internas",
   resumeImportDocxMaxXmlBytes: "8 MiB de XML DOCX",
   resumeImportRawTextMaxLength: "120.000 caracteres extraídos",
+  jobImportFileMaxBytes: "512 KiB",
 } as const);

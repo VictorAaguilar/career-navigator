@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useReducer, useState } from "react";
 import type { DocxRenderResult } from "../../../../src/schemas/docx-render.js";
+import type { JobImportSource } from "./job-file-import.js";
 import type { ResumeImportSource } from "./resume-file-import.js";
 import {
   canAdvanceTailoringDemo,
@@ -50,8 +51,10 @@ export function useTailoringDemoController() {
   const [isApplyingReview, setIsApplyingReview] = useState(false);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const resumeTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const jobTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const resumeStructureSummaryRef = useRef<HTMLDivElement | null>(null);
   const resumeImportSequenceRef = useRef(0);
+  const jobImportSequenceRef = useRef(0);
   const session = state.session;
   const currentStage = getWorkflowStage(session.currentStageId);
   const navigationState = useMemo(
@@ -129,6 +132,47 @@ export function useTailoringDemoController() {
     resumeTextareaRef.current?.focus({ preventScroll: false });
   };
 
+  const handleJobFileSelected = async (file: File | null) => {
+    const sequence = jobImportSequenceRef.current + 1;
+    jobImportSequenceRef.current = sequence;
+
+    try {
+      const {
+        JobImportError,
+        JobImportErrorCode,
+        getJobImportSource,
+        importJobFile,
+      } = await import("./job-file-import");
+      if (file === null) {
+        throw new JobImportError(JobImportErrorCode.FileRequired);
+      }
+      const source = getJobImportSource(file);
+      dispatch({ type: "job_import_started", source });
+      const result = await importJobFile(file);
+      if (jobImportSequenceRef.current !== sequence) {
+        return;
+      }
+      dispatch({ type: "job_import_succeeded", source: result.source, text: result.text });
+      jobTextareaRef.current?.focus({ preventScroll: false });
+    } catch (error) {
+      if (jobImportSequenceRef.current !== sequence) {
+        return;
+      }
+      const { JobImportError } = await import("./job-file-import");
+      dispatch({
+        type: "job_import_failed",
+        source: inferFailedJobImportSource(file),
+        errorCode: error instanceof JobImportError ? error.code : "JOB_IMPORT_FAILED",
+      });
+    }
+  };
+
+  const handleClearJobImport = () => {
+    jobImportSequenceRef.current += 1;
+    dispatch({ type: "job_import_cleared" });
+    jobTextareaRef.current?.focus({ preventScroll: false });
+  };
+
   const handleDetectResumeStructure = () => {
     dispatch({ type: "detect_resume_structure" });
     window.setTimeout(() => {
@@ -180,6 +224,7 @@ export function useTailoringDemoController() {
     guardMessage,
     titleRef,
     resumeTextareaRef,
+    jobTextareaRef,
     resumeStructureSummaryRef,
     isAnalyzing,
     isApplyingReview,
@@ -190,6 +235,8 @@ export function useTailoringDemoController() {
     handleRunAnalysis,
     handleResumeFileSelected,
     handleClearResumeImport,
+    handleJobFileSelected,
+    handleClearJobImport,
     handleDetectResumeStructure,
     handleApplyReview,
     handleDownload,
@@ -206,6 +253,20 @@ function inferFailedImportSource(file: File | null): ResumeImportSource {
   }
   if (name.endsWith(".pdf")) {
     return "pdf";
+  }
+  return "manual";
+}
+
+function inferFailedJobImportSource(file: File | null): JobImportSource {
+  if (file === null) {
+    return "manual";
+  }
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".txt")) {
+    return "txt";
+  }
+  if (name.endsWith(".md") || name.endsWith(".markdown")) {
+    return "md";
   }
   return "manual";
 }

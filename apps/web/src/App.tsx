@@ -19,6 +19,7 @@ export default function App() {
     guardMessage,
     titleRef,
     resumeTextareaRef,
+    jobTextareaRef,
     resumeStructureSummaryRef,
     isAnalyzing,
     isApplyingReview,
@@ -28,6 +29,8 @@ export default function App() {
     handleNext,
     handleResumeFileSelected,
     handleClearResumeImport,
+    handleJobFileSelected,
+    handleClearJobImport,
     handleDetectResumeStructure,
     handleRunAnalysis,
     handleApplyReview,
@@ -61,10 +64,13 @@ export default function App() {
               stage={currentStage}
               titleRef={titleRef}
               resumeTextareaRef={resumeTextareaRef}
+              jobTextareaRef={jobTextareaRef}
               resumeStructureSummaryRef={resumeStructureSummaryRef}
               onStart={handleNext}
               onResumeFileSelected={handleResumeFileSelected}
               onClearResumeImport={handleClearResumeImport}
+              onJobFileSelected={handleJobFileSelected}
+              onClearJobImport={handleClearJobImport}
               onDetectResumeStructure={handleDetectResumeStructure}
               onRunAnalysis={handleRunAnalysis}
               onApplyReview={handleApplyReview}

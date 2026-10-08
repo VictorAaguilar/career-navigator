@@ -17,6 +17,7 @@ const limitsModulePath = "../../apps/web/src/app/tailoring-demo-limits";
 const parsersModulePath = "../../apps/web/src/app/tailoring-demo-parsers";
 const pipelineModulePath = "../../apps/web/src/app/tailoring-demo-pipeline";
 const docxModulePath = "../../apps/web/src/app/tailoring-demo-docx";
+const jobImportModulePath = "../../apps/web/src/app/job-file-import";
 const constantsModulePath = "../../apps/web/src/app/tailoring-demo-constants";
 const nodeDocxRendererModulePath = "../../src/core/tailoring/docx-renderer";
 
@@ -30,6 +31,9 @@ describe("Tailoring UI demo MVP", () => {
   let extractRequirementTexts: (value: string) => string[];
   let parseJobText: (value: string) => any;
   let parseResumeText: (value: string) => any;
+  let importJobFile: (file: any) => Promise<any>;
+  let getJobImportSource: (file: any) => "txt" | "md";
+  let JobImportErrorCode: Record<string, string>;
   let applyTailoringDemoReview: (analysis: any, decisions: Record<string, string>) => any;
   let rebuildValidationWithCandidates: (analysis: any, candidates: Array<{ requestId: string; candidateText: string }>) => any;
   let runTailoringDemoAnalysis: (resume: string, job: string) => any;
@@ -47,6 +51,7 @@ describe("Tailoring UI demo MVP", () => {
     } = await import(stateModulePath));
     ({ TAILORING_DEMO_LIMITS } = await import(limitsModulePath));
     ({ extractRequirementTexts, parseJobText, parseResumeText } = await import(parsersModulePath));
+    ({ importJobFile, getJobImportSource, JobImportErrorCode } = await import(jobImportModulePath));
     ({ applyTailoringDemoReview, rebuildValidationWithCandidates, runTailoringDemoAnalysis } = await import(
       pipelineModulePath
     ));
@@ -112,6 +117,49 @@ describe("Tailoring UI demo MVP", () => {
     state = tailoringDemoReducer(state, { type: "set_job_text", value: `${jobText}\nNueva necesidad.` });
     expect(state.analysis).toBeNull();
     expect(state.docx.status).toBe("idle");
+  });
+
+  it("imports a TXT or MD job offer locally and invalidates derived results", async () => {
+    const importedJobText = "- React\n- TypeScript\n- Revisión humana";
+    expect(getJobImportSource(makeTextFile("offer.md", importedJobText, "text/markdown"))).toBe("md");
+    expect(getJobImportSource(makeTextFile("offer.md", importedJobText, "text/plain"))).toBe("md");
+    await expect(importJobFile(makeTextFile("offer.txt", importedJobText, "text/plain"))).resolves.toEqual({
+      source: "txt",
+      text: importedJobText,
+    });
+
+    let state = createTailoringDemoState();
+    state = tailoringDemoReducer(state, { type: "set_resume_text", value: resumeText });
+    state = tailoringDemoReducer(state, { type: "use_plain_resume_parser" });
+    state = tailoringDemoReducer(state, { type: "set_job_text", value: jobText });
+    state = tailoringDemoReducer(state, { type: "run_analysis" });
+    expect(state.analysis).not.toBeNull();
+
+    state = tailoringDemoReducer(state, { type: "job_import_started", source: "md" });
+    expect(state.jobImport.status).toBe("reading");
+    state = tailoringDemoReducer(state, { type: "job_import_succeeded", source: "md", text: importedJobText });
+    expect(state.jobText).toBe(importedJobText);
+    expect(state.jobImport).toEqual({ status: "ready", source: "md", errorCode: null });
+    expect(state.analysis).toBeNull();
+
+    state = tailoringDemoReducer(state, { type: "job_import_cleared" });
+    expect(state.jobText).toBe("");
+    expect(state.jobImport).toEqual({ status: "idle", source: "manual", errorCode: null });
+  });
+
+  it("rejects unsupported, empty, non UTF-8 and oversized job offer files with stable errors", async () => {
+    expect(() => getJobImportSource(makeTextFile("offer.pdf", "React", "application/pdf"))).toThrow(
+      JobImportErrorCode.TypeUnsupported,
+    );
+    await expect(importJobFile(makeTextFile("offer.txt", "   ", "text/plain"))).rejects.toThrow(
+      JobImportErrorCode.EmptyText,
+    );
+    await expect(importJobFile(makeBinaryFile("offer.txt", [0xff, 0xfe, 0xfd], "text/plain"))).rejects.toThrow(
+      JobImportErrorCode.DecodeFailed,
+    );
+    await expect(
+      importJobFile(makeTextFile("offer.txt", "x".repeat(TAILORING_DEMO_LIMITS.jobTextMaxLength + 1), "text/plain")),
+    ).rejects.toThrow(JobImportErrorCode.TextTooLarge);
   });
 
   it("requires an explicit structured or plain parsing mode before leaving resume", () => {
@@ -208,6 +256,7 @@ describe("Tailoring UI demo MVP", () => {
     expect(state.session.currentStageId).toBe("start");
     expect(state.resumeText).toBe("");
     expect(state.jobText).toBe("");
+    expect(state.jobImport.status).toBe("idle");
     expect(state.analysis).toBeNull();
     expect(state.appliedResult).toBeNull();
     expect(state.docx.status).toBe("idle");
@@ -378,6 +427,7 @@ describe("Tailoring UI demo MVP", () => {
     expect(markup).toContain("Comenzar");
     expect(markup).toContain("Tus datos no se almacenan en esta versión.");
     expect(markup).toContain("No usa IA generativa");
+    expect(markup).not.toContain("Importar oferta");
     expect(markup.match(/aria-current="step"/g)).toHaveLength(1);
   });
 
@@ -400,6 +450,7 @@ describe("Tailoring UI demo MVP", () => {
       "apps/web/src/app/tailoring-demo-parsers.ts",
       "apps/web/src/app/tailoring-demo-pipeline.ts",
       "apps/web/src/app/tailoring-demo-state.ts",
+      "apps/web/src/app/job-file-import.ts",
       "apps/web/src/app/tailoring-demo-docx.ts",
       "apps/web/src/App.tsx",
     ];
@@ -408,3 +459,21 @@ describe("Tailoring UI demo MVP", () => {
     expect(source).not.toMatch(/OpenAI|Anthropic|Gemini|apiKey|console\.log\(resumeText|console\.log\(jobText/);
   });
 });
+
+function makeTextFile(name: string, text: string, type: string) {
+  return {
+    name,
+    type,
+    size: new TextEncoder().encode(text).byteLength,
+    arrayBuffer: async () => new TextEncoder().encode(text).buffer,
+  };
+}
+
+function makeBinaryFile(name: string, bytes: readonly number[], type: string) {
+  return {
+    name,
+    type,
+    size: bytes.length,
+    arrayBuffer: async () => new Uint8Array(bytes).buffer,
+  };
+}
