@@ -1,10 +1,10 @@
 # Release Candidate Readiness
 
-Estado de preparación del MVP web local del CV Tailoring Agent antes de decidir un despliegue posterior.
+Estado de preparación del MVP web local del CV Tailoring Agent y de su Release Candidate pública en GitHub Pages.
 
 ## Resumen Ejecutivo
 
-El Release Candidate queda preparado para validación local con datos sintéticos y revisión humana. El flujo aprobado cubre importación local de currículum, parsing estructural o plano, análisis determinista, trazabilidad de evidencias, propuestas, decisiones explícitas, vista previa y descarga DOCX.
+El Release Candidate queda preparado para validación local y prueba pública controlada con datos sintéticos y revisión humana. El flujo aprobado cubre importación local de currículum, parsing estructural o plano, análisis determinista, trazabilidad de evidencias, propuestas, decisiones explícitas, vista previa y descarga DOCX.
 
 No se declara listo para producción pública, multiusuario ni uso con datos sensibles fuera del navegador local. No incorpora backend, cuentas, almacenamiento, analítica, llamadas LLM ni OCR.
 
@@ -29,7 +29,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 | Teclado | Aprobado con limitaciones | `npm run web:e2e:rc` cubre avance básico por teclado | No sustituye auditoría completa WCAG. |
 | Privacidad local | Aprobado | E2E bloquea requests externos; tests buscan storage/red | El usuario debe cerrar o limpiar la pestaña para descartar estado en memoria. |
 | Seguridad de dependencias de producción | Aprobado | `npm audit --omit=dev` | Vulnerabilidades dev conocidas no forman parte del paquete de producción. |
-| GitHub Pages | Pendiente | Workflow y validación local preparados; falta merge a `universal-redesign`, activación manual de Pages y public smoke real | No se marca desplegado desde la rama feature. |
+| GitHub Pages | Aprobado | Workflow `Deploy Career Navigator RC to GitHub Pages`, deploy y public smoke pasan en `universal-redesign` | Es sitio público de evaluación; usar datos ficticios. |
 
 ## Criterios Aprobados
 
@@ -41,6 +41,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 - `npm audit --omit=dev` muestra cero vulnerabilidades de producción.
 - `npm run web:e2e:rc` valida el flujo end-to-end sobre `vite preview`.
 - `npm run web:e2e:pages` valida localmente el build con base `/career-navigator/`.
+- El smoke público valida `https://victoraaguilar.github.io/career-navigator/`.
 - El DOCX descargado no contiene IDs técnicos ni metadatos de trazabilidad de UI.
 
 ## Limitaciones Conocidas
@@ -52,8 +53,8 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 - No hay llamadas LLM ni generación libre de texto.
 - No hay soporte declarado para Firefox o Safari en RC1.
 - No hay garantía de compatibilidad con todos los lectores DOCX.
-- GitHub Pages queda preparado, pero no desplegado durante el desarrollo en rama feature.
+- El sitio de GitHub Pages es público y debe probarse solo con datos ficticios.
 
 ## Decisión Recomendada
 
-La rama puede abrir Pull Request como Release Candidate local. Antes de un despliegue público se recomienda decidir matriz de navegadores, hosting, política de privacidad publicada, accesibilidad manual y estrategia de datos.
+La RC puede evaluarse públicamente en GitHub Pages con datos ficticios. Antes de uso con datos reales se recomienda decidir política de privacidad publicada, accesibilidad manual, matriz ampliada de navegadores y estrategia de datos.
