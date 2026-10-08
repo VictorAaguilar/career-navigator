@@ -15,7 +15,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 | Contrato de sesión | Aprobado | `tests/unit/tailoring-session-contracts.test.ts` | Sin navegación directa deliberada. |
 | Matching y scoring | Aprobado | `tests/unit/matching.test.ts`, `tests/unit/scoring.test.ts` | No se modifican fórmulas ni umbrales en este incremento. |
 | Importación DOCX/PDF local | Aprobado | `tests/unit/resume-file-import.test.ts`, `npm run web:e2e:import` | Sin OCR; solo PDF con texto seleccionable. |
-| Importación TXT/MD de oferta | Aprobado | `tests/unit/tailoring-ui-demo.test.ts` | Solo texto local; no se importan portales ni archivos ricos. |
+| Importación TXT/MD de oferta | Aprobado | `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e:pages` | Solo texto local; no se importan portales ni archivos ricos. |
 | Parsing estructural | Aprobado | `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure` | La clasificación sigue siendo revisable por humanos. |
 | Trazabilidad de evidencia y targeting | Aprobado | `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting` | Las ubicaciones aproximadas en modo plano requieren revisión. |
 | Revisión humana | Aprobado | `tests/unit/rewrite-review-decisions.test.ts`, `tests/unit/tailoring-ui-demo.test.ts` | No aplica cambios sin decisión explícita. |

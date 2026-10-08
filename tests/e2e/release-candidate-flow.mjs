@@ -107,8 +107,10 @@ async function run() {
   const downloadDir = await mkdtemp(join(tmpdir(), "career-navigator-rc-download-"));
   const docxPath = join(tempDir, "pages-resume.docx");
   const pdfPath = join(tempDir, "pages-resume.pdf");
+  const offerPath = join(tempDir, "pages-offer.md");
   await writeFile(docxPath, await buildSyntheticDocx());
   await writeFile(pdfPath, buildSyntheticPdf(["PDF React TypeScript", "Pruebas automatizadas"]));
+  await writeFile(offerPath, offerText);
   let browser;
   try {
     ({ browser } = await launchBrowserWithFallback({
@@ -123,7 +125,7 @@ async function run() {
     const telemetry = installPageGuards(page);
     await runReleaseCandidateScenario(page, downloadDir);
     if (options.includeImports) {
-      await runPagesImportScenario(page, docxPath, pdfPath, downloadDir);
+      await runPagesImportScenario(page, docxPath, pdfPath, offerPath, downloadDir);
     }
     await runResponsiveScenario(page);
     await runKeyboardScenario(page);
@@ -233,7 +235,7 @@ async function runResponsiveScenario(page) {
   }
 }
 
-async function runPagesImportScenario(page, docxPath, pdfPath, downloadDir) {
+async function runPagesImportScenario(page, docxPath, pdfPath, offerPath, downloadDir) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Comenzar" }).click();
   await page.getByLabel("Seleccionar archivo DOCX o PDF").setInputFiles(docxPath);
@@ -244,7 +246,10 @@ async function runPagesImportScenario(page, docxPath, pdfPath, downloadDir) {
   await page.getByRole("button", { name: "Confirmar estructura" }).click();
   await expectText(page, "Modo estructurado seleccionado");
   await page.getByRole("button", { name: "Continuar" }).click();
-  await page.getByRole("textbox", { name: "Oferta laboral" }).fill(offerText);
+  await page.getByLabel("Seleccionar archivo TXT o MD").setInputFiles(offerPath);
+  await expectText(page, "Texto extraído desde MD");
+  await expectText(page, "Docker");
+  await expectText(page, `${offerText.length} caracteres`);
   await page.getByRole("button", { name: "Continuar" }).click();
   await page.getByRole("button", { name: "Ejecutar análisis determinista" }).click();
   await expectText(page, "Puntuación");
