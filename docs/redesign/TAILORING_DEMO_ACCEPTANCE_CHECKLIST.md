@@ -25,6 +25,7 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend, persi
 - [ ] Editar después de importar invalida análisis y estructura. Automatizado: `tests/unit/resume-file-import.test.ts`, `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] Seleccionar dos archivos rápidamente conserva solo el último resultado. Manual; contrato protegido por contador local en `useTailoringDemoController`.
 - [ ] El campo de oferta conserva el texto pegado. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
+- [ ] TXT o MD de oferta importa texto localmente. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] Los contadores de caracteres se actualizan al escribir. Automatizado: `npm run web:e2e`.
 - [ ] No se muestran datos pegados dentro de mensajes de error. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
 

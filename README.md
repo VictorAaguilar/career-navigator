@@ -114,7 +114,7 @@ Built by someone who used it to evaluate 740+ job offers, generate 100+ tailored
 
 ## Career Navigator Web Release Candidate
 
-This repository also includes a local-first CV Tailoring Agent web Release Candidate. It lets a reviewer paste or import a resume, paste a target offer, inspect deterministic matching evidence, review proposed changes, preview the adapted resume and download `curriculum-adaptado.docx`.
+This repository also includes a local-first CV Tailoring Agent web Release Candidate. It lets a reviewer paste or import a resume, paste or import a target offer, inspect deterministic matching evidence, review proposed changes, preview the adapted resume and download `curriculum-adaptado.docx`.
 
 The RC runs entirely in the browser: no backend, no storage, no telemetry and no LLM calls. Validate it locally with locked dependencies:
 

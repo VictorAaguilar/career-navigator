@@ -18,10 +18,13 @@ type TailoringDemoStageProps = {
   stage: WorkflowStage;
   titleRef: StageHeaderProps["titleRef"];
   resumeTextareaRef: RefObject<HTMLTextAreaElement | null>;
+  jobTextareaRef: RefObject<HTMLTextAreaElement | null>;
   resumeStructureSummaryRef: RefObject<HTMLDivElement | null>;
   onStart: () => void;
   onResumeFileSelected: (file: File | null) => void;
   onClearResumeImport: () => void;
+  onJobFileSelected: (file: File | null) => void;
+  onClearJobImport: () => void;
   onDetectResumeStructure: () => void;
   onRunAnalysis: () => void;
   onApplyReview: () => void;
@@ -36,10 +39,13 @@ export function TailoringDemoStage({
   stage,
   titleRef,
   resumeTextareaRef,
+  jobTextareaRef,
   resumeStructureSummaryRef,
   onStart,
   onResumeFileSelected,
   onClearResumeImport,
+  onJobFileSelected,
+  onClearJobImport,
   onDetectResumeStructure,
   onRunAnalysis,
   onApplyReview,
@@ -63,7 +69,15 @@ export function TailoringDemoStage({
           onDetectStructure={onDetectResumeStructure}
         />
       ) : null}
-      {stage.id === "job" ? <JobStage state={state} dispatch={dispatch} /> : null}
+      {stage.id === "job" ? (
+        <JobStage
+          state={state}
+          dispatch={dispatch}
+          textareaRef={jobTextareaRef}
+          onFileSelected={onJobFileSelected}
+          onClearImport={onClearJobImport}
+        />
+      ) : null}
       {stage.id === "analysis" ? (
         <AnalysisStage state={state} onRunAnalysis={onRunAnalysis} isAnalyzing={isAnalyzing} />
       ) : null}

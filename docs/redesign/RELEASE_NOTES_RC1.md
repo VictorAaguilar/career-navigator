@@ -8,6 +8,7 @@ RC1 estabiliza el MVP local del CV Tailoring Agent para revisión end-to-end y p
 
 - Shell web de nueve etapas con `TailoringSession` como fuente única de navegación.
 - Importación local de currículum DOCX y PDF con texto seleccionable.
+- Importación local de ofertas TXT y Markdown.
 - Parsing estructural revisable y alternativa explícita de texto plano.
 - Análisis determinista de requisitos, evidencias y compatibilidad.
 - Explicaciones de ubicación de evidencia y ubicación objetivo.
@@ -79,7 +80,6 @@ El sitio público es una Release Candidate de evaluación. Usa datos ficticios d
 
 - No hay backend, login, almacenamiento ni sincronización.
 - No hay OCR.
-- No hay importación de ofertas desde archivo.
 - No hay generación libre de texto ni LLM.
 - No sustituye revisión humana.
 - No garantiza compatibilidad visual perfecta en todos los lectores DOCX.

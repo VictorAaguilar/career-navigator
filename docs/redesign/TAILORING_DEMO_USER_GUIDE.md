@@ -13,6 +13,7 @@ La demo permite:
 - cambiar la categoría de secciones detectadas;
 - confirmar estructura o continuar con análisis de texto plano;
 - pegar texto de oferta laboral;
+- importar ofertas laborales TXT o Markdown;
 - ejecutar un análisis determinista local;
 - revisar requisitos y evidencias encontradas;
 - ver la ubicación de cada evidencia en el currículum;
@@ -25,7 +26,6 @@ La demo permite:
 
 La demo no permite todavía:
 
-- importar archivos de oferta laboral;
 - leer archivos con OCR;
 - usar un LLM;
 - guardar sesiones;
@@ -74,7 +74,7 @@ http://127.0.0.1:4178/
 4. Revisa las secciones detectadas.
 5. Cambia `Tipo de sección` si una categoría no es correcta.
 6. Pulsa `Confirmar estructura` o `Usar análisis de texto plano`.
-7. Pega el texto de la oferta laboral.
+7. Pega el texto de la oferta laboral o importa una oferta TXT/MD local.
 8. Ejecuta el análisis determinista.
 9. Revisa requisitos y evidencias.
 10. Revisa las propuestas.

@@ -4,7 +4,7 @@ Estado de preparación del MVP web local del CV Tailoring Agent y de su Release 
 
 ## Resumen Ejecutivo
 
-El Release Candidate queda preparado para validación local y prueba pública controlada con datos sintéticos y revisión humana. El flujo aprobado cubre importación local de currículum, parsing estructural o plano, análisis determinista, trazabilidad de evidencias, propuestas, decisiones explícitas, vista previa y descarga DOCX.
+El Release Candidate queda preparado para validación local y prueba pública controlada con datos sintéticos y revisión humana. El flujo aprobado cubre importación local de currículum, importación local de oferta, parsing estructural o plano, análisis determinista, trazabilidad de evidencias, propuestas, decisiones explícitas, vista previa y descarga DOCX.
 
 No se declara listo para producción pública, multiusuario ni uso con datos sensibles fuera del navegador local. No incorpora backend, cuentas, almacenamiento, analítica, llamadas LLM ni OCR.
 
@@ -15,6 +15,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 | Contrato de sesión | Aprobado | `tests/unit/tailoring-session-contracts.test.ts` | Sin navegación directa deliberada. |
 | Matching y scoring | Aprobado | `tests/unit/matching.test.ts`, `tests/unit/scoring.test.ts` | No se modifican fórmulas ni umbrales en este incremento. |
 | Importación DOCX/PDF local | Aprobado | `tests/unit/resume-file-import.test.ts`, `npm run web:e2e:import` | Sin OCR; solo PDF con texto seleccionable. |
+| Importación TXT/MD de oferta | Aprobado | `tests/unit/tailoring-ui-demo.test.ts` | Solo texto local; no se importan portales ni archivos ricos. |
 | Parsing estructural | Aprobado | `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure` | La clasificación sigue siendo revisable por humanos. |
 | Trazabilidad de evidencia y targeting | Aprobado | `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting` | Las ubicaciones aproximadas en modo plano requieren revisión. |
 | Revisión humana | Aprobado | `tests/unit/rewrite-review-decisions.test.ts`, `tests/unit/tailoring-ui-demo.test.ts` | No aplica cambios sin decisión explícita. |
@@ -49,7 +50,6 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 - No hay backend ni persistencia.
 - No hay autenticación ni sesiones guardadas.
 - No hay OCR para PDFs escaneados.
-- No hay importación de ofertas desde archivo.
 - No hay llamadas LLM ni generación libre de texto.
 - No hay soporte declarado para Firefox o Safari en RC1.
 - No hay garantía de compatibilidad con todos los lectores DOCX.
