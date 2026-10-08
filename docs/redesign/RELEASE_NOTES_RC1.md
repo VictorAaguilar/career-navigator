@@ -2,7 +2,7 @@
 
 ## Career Navigator Web RC1
 
-RC1 estabiliza el MVP local del CV Tailoring Agent para revisión end-to-end antes de cualquier despliegue público.
+RC1 estabiliza el MVP local del CV Tailoring Agent para revisión end-to-end y prueba pública controlada en GitHub Pages.
 
 ## Incluido
 
@@ -17,7 +17,7 @@ RC1 estabiliza el MVP local del CV Tailoring Agent para revisión end-to-end ant
 - Descarga local de `curriculum-adaptado.docx`.
 - Runner E2E RC sobre build de producción con `vite preview`.
 - Presupuesto automatizado de bundle inicial.
-- Preparación de despliegue estático en GitHub Pages con base `/career-navigator/`, pendiente de merge y activación manual.
+- Despliegue estático en GitHub Pages con base `/career-navigator/` y smoke público automatizado.
 
 ## Garantías De Privacidad
 
@@ -67,10 +67,16 @@ npm run web:pages:artifact-check
 
 El E2E usa canales Playwright (`chromium`, `chrome`, `msedge`) y no requiere `chromium-headless-shell`.
 
+## URL Pública De Prueba
+
+```text
+https://victoraaguilar.github.io/career-navigator/
+```
+
+El sitio público es una Release Candidate de evaluación. Usa datos ficticios durante las pruebas.
+
 ## Limitaciones
 
-- No es un despliegue público.
-- GitHub Pages aún requiere merge a `universal-redesign` y activación manual en Settings.
 - No hay backend, login, almacenamiento ni sincronización.
 - No hay OCR.
 - No hay importación de ofertas desde archivo.
@@ -85,7 +91,7 @@ No se modifican contratos de matching, scoring, schemas de dominio, generación 
 
 ## Riesgos Pendientes
 
-- Definir hosting y política de privacidad para despliegue.
+- Definir política de privacidad publicada antes de uso con datos reales.
 - Ampliar matriz de navegadores si se requiere soporte Firefox/Safari.
 - Añadir revisión manual de accesibilidad y responsive.
 - Definir estrategia de persistencia si más adelante se permiten sesiones guardadas.
