@@ -21,7 +21,7 @@ RC1 no queda aceptada para uso con datos personales reales, producción pública
 - Validación local del build de producción.
 - Validación local del artifact de GitHub Pages.
 - Publicación estática de prueba en GitHub Pages.
-- Marcado `noindex,nofollow` para desalentar indexación de la RC pública.
+- Marcado `noindex,nofollow` y `robots.txt` con `Disallow: /` para desalentar indexación de la RC pública.
 
 ## Gate De Validación
 
@@ -70,7 +70,7 @@ El gate también limpia `apps/web/dist` al terminar para evitar publicar o commi
 - La auditoría WCAG manual completa queda pendiente.
 - La compatibilidad DOCX debe confirmarse con lectores reales si se requiere distribución formal.
 - GitHub Pages es público; solo deben usarse datos ficticios.
-- `noindex,nofollow` no es control de acceso y no habilita uso con datos reales.
+- `noindex,nofollow` y `robots.txt` no son controles de acceso y no habilitan uso con datos reales.
 
 ## Fuera De Alcance De RC1
 

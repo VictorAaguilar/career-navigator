@@ -54,6 +54,7 @@ function validDistFiles(overrides = {}) {
     ].join(""),
     "assets/index-abc.js": "console.log('entry');",
     "assets/index-abc.css": "body{margin:0}",
+    "robots.txt": "User-agent: *\nDisallow: /\n",
     ...overrides,
   };
 }
@@ -103,6 +104,11 @@ function smokeResponses(htmlOverride) {
       "console.log('ok');",
     ),
     [`${EXPECTED_PAGES_ORIGIN}/career-navigator/assets/index.css`]: mockResponse(200, "text/css", "body{}"),
+    [`${EXPECTED_PAGES_ORIGIN}/career-navigator/robots.txt`]: mockResponse(
+      200,
+      "text/plain",
+      "User-agent: *\nDisallow: /\n",
+    ),
   };
 }
 
@@ -557,6 +563,22 @@ describe("GitHub Pages public smoke", () => {
     ).rejects.toThrow("PAGES_SMOKE_ROBOTS_NOINDEX_MISSING");
   });
 
+  it("requires public robots.txt to disallow crawling the RC", async () => {
+    const responses = smokeResponses();
+    responses[`${EXPECTED_PAGES_ORIGIN}/career-navigator/robots.txt`] = mockResponse(
+      200,
+      "text/plain",
+      "User-agent: *\nAllow: /\n",
+    );
+    await expect(
+      runGithubPagesSmoke({
+        deployedSiteUrl: "https://victoraaguilar.github.io/career-navigator/",
+        fetchFn: createMockFetch(responses),
+        retryDelayMs: 0,
+      }),
+    ).rejects.toThrow("PAGES_SMOKE_ROBOTS_TXT_DISALLOW_MISSING");
+  });
+
   it("fails on final 404 HTML", async () => {
     await expect(
       runGithubPagesSmoke({
@@ -643,7 +665,7 @@ describe("GitHub Pages public smoke", () => {
       requestTimeoutMs: 100,
       retryDelayMs: 0,
     });
-    expect(fetchFn.calls.length).toBe(3);
+    expect(fetchFn.calls.length).toBe(4);
   });
 
   it("uses stable safe errors", async () => {

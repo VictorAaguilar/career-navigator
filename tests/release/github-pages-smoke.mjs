@@ -97,6 +97,14 @@ export async function runGithubPagesSmoke({
     }
   }
 
+  const robotsUrl = new URL("robots.txt", siteUrl);
+  const robots = await fetchOnce(robotsUrl, { fetchFn, requestTimeoutMs });
+  if (robots.status !== 200) {
+    findings.push(`PAGES_SMOKE_ROBOTS_TXT_STATUS_${robots.status}`);
+  } else if (!hasRobotsDisallowAll(robots.body)) {
+    findings.push("PAGES_SMOKE_ROBOTS_TXT_DISALLOW_MISSING");
+  }
+
   if (findings.length > 0) {
     throw new Error([GITHUB_PAGES_SMOKE_FAILED, ...findings].join("\n"));
   }
@@ -165,6 +173,11 @@ function hasRobotsNoIndex(html) {
     const content = /content\s*=\s*["']([^"']+)["']/iu.exec(tag)?.[1] ?? "";
     return content.split(",").map((value) => value.trim().toLowerCase()).includes("noindex");
   });
+}
+
+function hasRobotsDisallowAll(content) {
+  return /(?:^|\n)\s*User-agent:\s*\*\s*(?:\n|$)/iu.test(content)
+    && /(?:^|\n)\s*Disallow:\s*\/\s*(?:\n|$)/iu.test(content);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

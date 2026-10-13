@@ -29,7 +29,7 @@ RC1 estabiliza el MVP local del CV Tailoring Agent para revisión end-to-end y p
 - Sin llamadas LLM.
 - Sin analítica.
 - Sin subida de archivos.
-- Página marcada como `noindex,nofollow` para desalentar indexación de la RC pública.
+- Página marcada como `noindex,nofollow` y `robots.txt` con `Disallow: /` para desalentar indexación de la RC pública.
 
 Los datos pegados o importados viven en memoria de la pestaña durante la sesión local.
 
@@ -87,7 +87,7 @@ La decisión formal de cierre de RC1 está documentada en `docs/redesign/RC1_SIG
 - No hay OCR.
 - No hay generación libre de texto ni LLM.
 - No sustituye revisión humana.
-- `noindex,nofollow` no sustituye controles de acceso ni convierte la RC pública en privada.
+- `noindex,nofollow` y `robots.txt` no sustituyen controles de acceso ni convierten la RC pública en privada.
 - No garantiza compatibilidad visual perfecta en todos los lectores DOCX.
 - No incluye auditoría manual completa WCAG.
 

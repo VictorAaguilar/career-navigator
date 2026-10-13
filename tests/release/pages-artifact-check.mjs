@@ -60,6 +60,16 @@ export function inspectPagesArtifact({
     }
   }
 
+  const robotsPath = resolve(resolvedDist, "robots.txt");
+  if (!files.includes("robots.txt")) {
+    findings.push("PAGES_ARTIFACT_ROBOTS_TXT_MISSING");
+  } else {
+    const robots = readFileSync(robotsPath, "utf8");
+    if (!hasRobotsDisallowAll(robots)) {
+      findings.push("PAGES_ARTIFACT_ROBOTS_TXT_DISALLOW_MISSING");
+    }
+  }
+
   try {
     assertWebBundleBudget(analyzeWebBundle({ distDir: resolvedDist, basePath }));
   } catch (error) {
@@ -122,6 +132,11 @@ function hasRobotsNoIndex(html) {
     const content = /content\s*=\s*["']([^"']+)["']/iu.exec(tag)?.[1] ?? "";
     return content.split(",").map((value) => value.trim().toLowerCase()).includes("noindex");
   });
+}
+
+function hasRobotsDisallowAll(content) {
+  return /(?:^|\n)\s*User-agent:\s*\*\s*(?:\n|$)/iu.test(content)
+    && /(?:^|\n)\s*Disallow:\s*\/\s*(?:\n|$)/iu.test(content);
 }
 
 function freezeReport(distDir, files, findings) {

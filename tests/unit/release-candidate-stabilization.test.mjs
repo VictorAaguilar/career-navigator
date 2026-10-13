@@ -240,10 +240,13 @@ describe("Release Candidate stabilization", () => {
 
   it("keeps the public RC marked as noindex", () => {
     const index = readRepoFile("apps/web/index.html");
+    const robots = readRepoFile("apps/web/public/robots.txt");
 
     expect(index).toContain('name="robots"');
     expect(index).toContain("noindex");
     expect(index).toContain("nofollow");
+    expect(robots).toContain("User-agent: *");
+    expect(robots).toContain("Disallow: /");
   });
 
   it("exposes the release validation path from the README", () => {
