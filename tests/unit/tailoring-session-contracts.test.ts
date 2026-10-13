@@ -426,6 +426,7 @@ describe("Tailoring session contracts", () => {
     expect(markup).toContain("Pendiente");
     expect(markup).toContain("Paso 1 de 9");
     expect(markup).toContain("Usa datos ficticios.");
+    expect(markup).toContain("Modo demo público: no pegues datos reales");
     expect(markup).toContain("Tus datos no se almacenan en esta versión.");
     expect(markup).toMatch(/<button[^>]*disabled=""/);
     expect(markup).toContain(">Continuar</button>");

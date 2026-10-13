@@ -12,6 +12,9 @@ export function StartStage({ onStart }: { onStart: () => void }) {
             Versión candidata pública de prueba: utiliza datos ficticios para evaluarla. Los
             archivos se procesan localmente en el navegador y no existe persistencia.
           </p>
+          <p className="demo-safety-note">
+            Modo demo público: no pegues datos reales, CV personales ni ofertas confidenciales.
+          </p>
         </div>
         <button type="button" className="primary-action" onClick={onStart}>
           Comenzar

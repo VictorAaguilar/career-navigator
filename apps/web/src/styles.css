@@ -560,6 +560,16 @@ select:focus-visible {
   line-height: 1.55;
 }
 
+.intro-band .demo-safety-note {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: 0.45rem 0.65rem;
+  border-left: 3px solid #b45309;
+  background: #fff7ed;
+  color: #7c2d12;
+  font-weight: 900;
+}
+
 .feature-grid,
 .metric-grid {
   display: grid;

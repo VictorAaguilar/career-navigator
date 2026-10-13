@@ -8,6 +8,12 @@ RC1 es una demo pública de evaluación con datos sintéticos.
 
 No está aprobada para CV reales, ofertas privadas, datos personales, datos sensibles, producción pública ni uso multiusuario.
 
+La pantalla inicial debe mostrar un aviso visible equivalente a:
+
+```text
+Modo demo público: no pegues datos reales, CV personales ni ofertas confidenciales.
+```
+
 ## Qué Procesa
 
 La demo puede procesar localmente en el navegador:
