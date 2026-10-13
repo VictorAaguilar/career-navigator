@@ -59,4 +59,6 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 
 La RC puede evaluarse públicamente en GitHub Pages con datos ficticios. El cierre formal de RC1 está documentado en `docs/redesign/RC1_SIGNOFF.md`.
 
+Los puntos no automatizados se deben revisar con `docs/redesign/RC1_MANUAL_QA_PROTOCOL.md`.
+
 Antes de uso con datos reales se recomienda decidir política de privacidad publicada, accesibilidad manual, matriz ampliada de navegadores y estrategia de datos.
