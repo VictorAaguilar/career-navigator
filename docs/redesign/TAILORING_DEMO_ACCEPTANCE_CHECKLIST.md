@@ -101,7 +101,7 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend, persi
 - [ ] Hay un único `aria-current="step"`. Automatizado: `npm run web:e2e`, `npm run web:e2e:structure`.
 - [ ] Los campos tienen etiquetas accesibles. Automatizado: `tests/unit/resume-file-import.test.ts`.
 - [ ] Los mensajes de error usan `role="alert"`. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
-- [ ] El panel estructural usa `fieldset`, `legend`, labels visibles y `aria-live`. Automatizado: `tests/unit/resume-file-import.test.ts`; revisión manual recomendada.
+- [ ] El panel estructural usa `fieldset`, `legend`, labels visibles y `aria-live`. Automatizado: `tests/unit/resume-file-import.test.ts`.
 - [ ] Las áreas editables exponen ayuda y estado de validación. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
 - [ ] La interfaz no produce overflow horizontal general en 320 px, 375 px, 768 px, 1024 px y 1440 px. Automatizado: `npm run web:e2e:rc`; revisión visual manual recomendada.
 - [ ] Las ubicaciones rompen línea y no causan scroll horizontal general en móvil. Manual.
