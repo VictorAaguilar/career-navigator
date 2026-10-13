@@ -104,29 +104,36 @@ async function run() {
 
     await expectText(page, "Tus datos no se almacenan en esta versión.");
     await page.getByRole("button", { name: "Comenzar" }).click();
+    await expectStageTitleFocused(page, "Introduce tu experiencia profesional");
     await page.getByRole("textbox", { name: "Currículum" }).fill(cvText);
     await expectText(page, `${cvText.length} caracteres`);
     await page.getByRole("button", { name: "Usar análisis de texto plano" }).click();
     await expectText(page, "Modo de texto plano seleccionado");
     await page.getByRole("button", { name: "Continuar" }).click();
+    await expectStageTitleFocused(page, "Añade la oferta laboral objetivo");
 
     await page.getByRole("textbox", { name: "Oferta laboral" }).fill(offerText);
     await expectText(page, `${offerText.length} caracteres`);
     await page.getByRole("button", { name: "Continuar" }).click();
+    await expectStageTitleFocused(page, "Analiza requisitos y compatibilidad");
 
     await page.getByRole("button", { name: "Ejecutar análisis determinista" }).click();
     await expectText(page, "No cubiertos");
     await page.getByRole("button", { name: "Continuar" }).click();
+    await expectStageTitleFocused(page, "Revisa requisitos y evidencias encontradas");
     await expectText(page, "Docker");
     await expectText(page, "No se encontró evidencia en el currículum.");
     await page.getByRole("button", { name: "Continuar" }).click();
+    await expectStageTitleFocused(page, "Compara las mejoras sugeridas");
 
     const bodyAfterProposals = await page.locator("body").innerText();
     if (bodyAfterProposals.includes("No hay propuestas aplicables")) {
       await page.getByRole("button", { name: "Continuar" }).click();
+      await expectStageTitleFocused(page, "Aprueba, rechaza o edita cada propuesta");
       await page.getByRole("button", { name: "Generar vista previa sin cambios" }).click();
     } else {
       await page.getByRole("button", { name: "Continuar" }).click();
+      await expectStageTitleFocused(page, "Aprueba, rechaza o edita cada propuesta");
       const firstTextarea = page.locator("textarea").first();
       const originalProposal = await firstTextarea.inputValue();
       await firstTextarea.fill(`${originalProposal}\n# Markdown`);
@@ -141,11 +148,15 @@ async function run() {
     }
 
     await page.getByRole("button", { name: "Continuar" }).click();
+    await expectStageTitleFocused(page, "Revisa el currículum adaptado");
     await expectText(page, "Rechazadas");
     await page.getByRole("button", { name: "Anterior" }).click();
+    await expectStageTitleFocused(page, "Aprueba, rechaza o edita cada propuesta");
     await expectText(page, "Decisión humana");
     await page.getByRole("button", { name: "Continuar" }).click();
+    await expectStageTitleFocused(page, "Revisa el currículum adaptado");
     await page.getByRole("button", { name: "Continuar" }).click();
+    await expectStageTitleFocused(page, "Genera y descarga el documento DOCX");
 
     const ariaCurrentCount = await page.locator('[aria-current="step"]').count();
     if (ariaCurrentCount !== 1) {
@@ -183,6 +194,14 @@ async function run() {
 
 async function expectText(page, text) {
   await page.getByText(text, { exact: false }).first().waitFor({ timeout: 10_000 });
+}
+
+async function expectStageTitleFocused(page, title) {
+  await page.waitForFunction((expectedTitle) => {
+    const activeElement = document.activeElement;
+    return activeElement?.id === "stage-title"
+      && activeElement.textContent?.trim() === expectedTitle;
+  }, title, { timeout: 10_000 });
 }
 
 try {
