@@ -73,7 +73,7 @@ GitHub Pages debe habilitarse manualmente en `Settings -> Pages` con source `Git
 - `web:e2e:pages` reconstruye Pages, arranca preview en `4179`, abre `/career-navigator/`, importa DOCX/PDF sintéticos, ejecuta el flujo y valida descarga DOCX.
 - `web:pages:artifact-check` inspecciona `apps/web/dist` antes de subirlo.
 - `web:pages:smoke` valida una URL pública real después del deploy.
-- `.github/workflows/deploy-pages.yml` valida PRs y despliega solo desde `universal-redesign`.
+- `.github/workflows/deploy-pages.yml` valida PRs con `release:check`, reconstruye el artifact solo en refs desplegables y despliega solo desde `universal-redesign`.
 
 ## Seguridad Del Workflow
 
