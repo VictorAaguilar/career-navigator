@@ -234,7 +234,16 @@ describe("Release Candidate stabilization", () => {
     expect(releaseNotes.toLowerCase()).toContain("sin backend");
     expect(releaseNotes.toLowerCase()).toContain("sin almacenamiento");
     expect(releaseNotes.toLowerCase()).toContain("sin llamadas llm");
+    expect(releaseNotes.toLowerCase()).toContain("noindex");
     expect(releaseNotes).toContain("Limitaciones");
+  });
+
+  it("keeps the public RC marked as noindex", () => {
+    const index = readRepoFile("apps/web/index.html");
+
+    expect(index).toContain('name="robots"');
+    expect(index).toContain("noindex");
+    expect(index).toContain("nofollow");
   });
 
   it("exposes the release validation path from the README", () => {

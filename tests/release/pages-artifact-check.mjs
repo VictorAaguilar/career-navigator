@@ -48,6 +48,9 @@ export function inspectPagesArtifact({
     if (/\b(?:src|href)=["']\/assets\//iu.test(html)) {
       findings.push("PAGES_ARTIFACT_ROOT_ASSET_REFERENCE");
     }
+    if (!hasRobotsNoIndex(html)) {
+      findings.push("PAGES_ARTIFACT_ROBOTS_NOINDEX_MISSING");
+    }
     const activeRefs = [
       ...extractAttributeValues(html, "script", "src"),
       ...extractAttributeValues(html, "link", "href").filter((href) => !href.startsWith("data:")),
@@ -111,6 +114,14 @@ function extractAttributeValues(html, tagName, attributeName) {
     }
   }
   return values;
+}
+
+function hasRobotsNoIndex(html) {
+  const robotsTags = Array.from(html.matchAll(/<meta\b[^>]*name\s*=\s*["']robots["'][^>]*>/giu)).map((match) => match[0]);
+  return robotsTags.some((tag) => {
+    const content = /content\s*=\s*["']([^"']+)["']/iu.exec(tag)?.[1] ?? "";
+    return content.split(",").map((value) => value.trim().toLowerCase()).includes("noindex");
+  });
 }
 
 function freezeReport(distDir, files, findings) {
