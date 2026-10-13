@@ -322,8 +322,17 @@ describe("GitHub Pages deployment workflow", () => {
     expect(workflow).toContain("google-chrome --version");
   });
 
-  it("runs the Pages E2E before upload", () => {
-    expect(workflow.indexOf("npm run web:e2e:pages")).toBeLessThan(workflow.indexOf("Upload Pages artifact"));
+  it("uses release:check as the single validation gate before upload", () => {
+    expect(workflow.indexOf("npm run release:check")).toBeLessThan(workflow.indexOf("Upload Pages artifact"));
+    expect(workflow).not.toContain("run: npm test");
+    expect(workflow).not.toContain("run: npm run web:e2e:pages");
+  });
+
+  it("rebuilds and checks the deployable Pages artifact after release:check cleanup", () => {
+    expect(workflow.indexOf("Build deployable Pages artifact")).toBeGreaterThan(workflow.indexOf("npm run release:check"));
+    expect(workflow.indexOf("Check deployable Pages artifact")).toBeGreaterThan(workflow.indexOf("Build deployable Pages artifact"));
+    expect(workflow.indexOf("Check deployable Pages artifact")).toBeLessThan(workflow.indexOf("Upload Pages artifact"));
+    expect(workflow).toContain("npm run web:pages:artifact-check");
   });
 });
 

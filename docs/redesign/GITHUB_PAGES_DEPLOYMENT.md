@@ -69,16 +69,15 @@ El job de build ejecuta:
 
 ```bash
 npm ci
-npm test
-npm run typecheck
-npm run web:typecheck
+google-chrome --version
+npm run release:check
+```
+
+`release:check` cubre tests unitarios, typechecks, build web, bundle check, audit de producción, E2E RC, E2E local de Pages y artifact check. Como ese gate limpia `apps/web/dist` al terminar, los refs desplegables reconstruyen el artifact Pages y vuelven a comprobarlo antes de subirlo:
+
+```bash
 npm run web:build
-npm run web:bundle:check
 npm run web:pages:artifact-check
-npm run web:e2e:pages
-npm run web:bundle:check
-npm run web:pages:artifact-check
-npm audit --omit=dev
 ```
 
 Chrome debe estar disponible en el runner. El workflow comprueba:

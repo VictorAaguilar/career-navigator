@@ -41,51 +41,24 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Run unit tests
-        run: npm test
+      - name: Verify Chrome channel availability
+        run: google-chrome --version || (echo "GITHUB_PAGES_CHROME_NOT_AVAILABLE" && exit 1)
 
-      - name: Typecheck root
-        run: npm run typecheck
+      - name: Run full release validation gate
+        run: npm run release:check
 
-      - name: Typecheck web
-        run: npm run web:typecheck
-
-      - name: Build web for GitHub Pages
-        # Pages is a project site, so production assets must live below /career-navigator/.
+      - name: Build deployable Pages artifact
+        # release:check validates Pages and then removes dist; deployable refs rebuild the exact artifact to upload.
+        if: env.IS_DEPLOYABLE_REF == 'true'
         env:
           CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
         run: npm run web:build
 
-      - name: Check bundle budget
-        env:
-          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
-        run: npm run web:bundle:check
-
-      - name: Check Pages artifact before browser smoke
+      - name: Check deployable Pages artifact
+        if: env.IS_DEPLOYABLE_REF == 'true'
         env:
           CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
         run: npm run web:pages:artifact-check
-
-      - name: Verify Chrome channel availability
-        run: google-chrome --version || (echo "GITHUB_PAGES_CHROME_NOT_AVAILABLE" && exit 1)
-
-      - name: Run Pages E2E against local preview
-        env:
-          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
-        run: npm run web:e2e:pages
-
-      - name: Re-check bundle budget after E2E build
-        env:
-          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
-        run: npm run web:bundle:check
-
-      - name: Re-check Pages artifact after E2E build
-        env:
-          CAREER_NAVIGATOR_BASE_PATH: /career-navigator/
-        run: npm run web:pages:artifact-check
-
-      - name: Audit production dependencies
-        run: npm audit --omit=dev
 
       - name: Configure GitHub Pages
         # v6.0.0 pinned. Pull requests validate only and never configure Pages.
