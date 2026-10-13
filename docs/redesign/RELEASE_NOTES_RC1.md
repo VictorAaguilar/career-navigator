@@ -33,6 +33,8 @@ RC1 estabiliza el MVP local del CV Tailoring Agent para revisión end-to-end y p
 
 Los datos pegados o importados viven en memoria de la pestaña durante la sesión local.
 
+La nota de privacidad de RC1 está documentada en `docs/redesign/RC1_PRIVACY_NOTICE.md`.
+
 ## Validación Recomendada
 
 ```bash

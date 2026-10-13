@@ -230,12 +230,17 @@ describe("Release Candidate stabilization", () => {
 
   it("documents privacy guarantees and limitations for RC1", () => {
     const releaseNotes = readRepoFile("docs/redesign/RELEASE_NOTES_RC1.md");
+    const privacyNotice = readRepoFile("docs/redesign/RC1_PRIVACY_NOTICE.md");
 
     expect(releaseNotes.toLowerCase()).toContain("sin backend");
     expect(releaseNotes.toLowerCase()).toContain("sin almacenamiento");
     expect(releaseNotes.toLowerCase()).toContain("sin llamadas llm");
     expect(releaseNotes.toLowerCase()).toContain("noindex");
     expect(releaseNotes).toContain("Limitaciones");
+    expect(privacyNotice).toContain("datos sintéticos");
+    expect(privacyNotice).toContain("no usar datos reales");
+    expect(privacyNotice).toContain("no son controles de acceso");
+    expect(privacyNotice).toContain("política de privacidad publicada");
   });
 
   it("keeps the public RC marked as noindex", () => {
@@ -256,6 +261,7 @@ describe("Release Candidate stabilization", () => {
     expect(readme).toContain("npm.cmd run release:check");
     expect(readme).toContain("docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md");
     expect(readme).toContain("docs/redesign/RC1_MANUAL_QA_PROTOCOL.md");
+    expect(readme).toContain("docs/redesign/RC1_PRIVACY_NOTICE.md");
     expect(readme).toContain("docs/redesign/RC1_SIGNOFF.md");
   });
 
