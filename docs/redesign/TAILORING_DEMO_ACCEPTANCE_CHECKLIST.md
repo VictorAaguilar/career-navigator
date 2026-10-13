@@ -50,7 +50,7 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend, persi
 - [ ] Cambiar `resumeText` invalida estructura. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e:structure`.
 - [ ] Cambiar una categoría invalida confirmación y análisis. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] Importar DOCX permite detectar y confirmar estructura. Automatizado: `npm run web:e2e:import`.
-- [ ] Importar PDF deja texto editable para detectar estructura. Automatizado: `tests/unit/resume-file-import.test.ts`; revisión visual manual recomendada.
+- [ ] Importar PDF deja texto editable para detectar estructura. Automatizado: `tests/unit/resume-file-import.test.ts`, `npm run web:e2e:import`.
 - [ ] No se inventa texto, cargos, empresas, fechas ni habilidades. Automatizado: `tests/unit/structured-resume-parsing.test.ts`.
 
 ## Análisis
