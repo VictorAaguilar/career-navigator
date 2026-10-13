@@ -291,9 +291,16 @@ describe("local resume file import", () => {
   });
 
   it("renders accessible import UI while keeping the textarea visible", () => {
+    let state = createTailoringDemoState();
+    state = tailoringDemoReducer(state, {
+      type: "set_resume_text",
+      value: ["EXPERIENCIA", "React TypeScript", "FORMACIÓN", "Ingeniería"].join("\n"),
+    });
+    state = tailoringDemoReducer(state, { type: "detect_resume_structure" });
+
     const markup = renderToStaticMarkup(
       React.createElement(ResumeStage, {
-        state: createTailoringDemoState(),
+        state,
         dispatch: () => undefined,
         textareaRef: { current: null },
         structureSummaryRef: { current: null },
@@ -309,8 +316,14 @@ describe("local resume file import", () => {
     expect(markup).toContain('type="file"');
     expect(markup).toContain(".docx,.pdf,application/pdf");
     expect(markup).toContain("Estructura del curr");
-    expect(markup).toContain("Detectar estructura");
+    expect(markup).toContain("Volver a detectar");
     expect(markup).toContain("<textarea");
+    expect(markup).toContain('aria-live="polite"');
+    expect(markup).toContain('<fieldset class="structure-review" aria-describedby="resume-structure-help">');
+    expect(markup).toContain("<legend>Revisión de secciones detectadas</legend>");
+    expect(markup).toContain("<label>Tipo de sección<select");
+    expect(markup).toContain("EXPERIENCIA");
+    expect(markup).toContain("FORMACIÓN");
   });
 
   it("keeps import modules free of storage, network, OCR, LLM, logs, timestamps and local paths", () => {
