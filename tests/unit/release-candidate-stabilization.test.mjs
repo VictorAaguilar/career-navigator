@@ -243,6 +243,19 @@ describe("Release Candidate stabilization", () => {
     expect(readme).toContain("Release Candidate");
     expect(readme).toContain("npm.cmd run release:check");
     expect(readme).toContain("docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md");
+    expect(readme).toContain("docs/redesign/RC1_SIGNOFF.md");
+  });
+
+  it("documents the RC1 sign-off decision without expanding production scope", () => {
+    const signoff = readRepoFile("docs/redesign/RC1_SIGNOFF.md");
+
+    expect(signoff).toContain("RC1 queda aceptada para evaluación pública controlada");
+    expect(signoff).toContain("datos sintéticos");
+    expect(signoff).toContain("npm run release:check");
+    expect(signoff).toContain("npm audit --omit=dev");
+    expect(signoff).toContain("Firefox no queda aprobado");
+    expect(signoff).toContain("Safari no queda probado");
+    expect(signoff).toContain("no queda aceptada para uso con datos personales reales");
   });
 
   it("keeps release validation scripts out of domain scoring and matching modules", () => {
