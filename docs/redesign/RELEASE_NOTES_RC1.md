@@ -48,7 +48,7 @@ npm.cmd run release:check
 Remove-Item Env:PLAYWRIGHT_BROWSER_CHANNEL -ErrorAction SilentlyContinue
 ```
 
-`release:check` ejecuta tests unitarios, typecheck raíz, typecheck web, build web, bundle check, audit de producción, E2E RC, E2E local de GitHub Pages y comprobación del artifact Pages.
+`release:check` ejecuta tests unitarios, typecheck raíz, typecheck web, build web, bundle check, audit de producción, E2E RC, E2E local de GitHub Pages y comprobación del artifact Pages. Al terminar elimina el artifact ignorado `apps/web/dist`.
 
 Validación Pages local:
 

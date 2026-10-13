@@ -87,7 +87,7 @@ npm.cmd run release:check
 Remove-Item Env:PLAYWRIGHT_BROWSER_CHANNEL -ErrorAction SilentlyContinue
 ```
 
-`release:check` does not run `npm ci` and does not modify files intentionally. It stops at the first failing command. It covers the local RC flow, the GitHub Pages base-path flow, and the Pages artifact check.
+`release:check` does not run `npm ci` and does not modify tracked files intentionally. It stops at the first failing command. It covers the local RC flow, the GitHub Pages base-path flow, and the Pages artifact check, then removes the ignored `apps/web/dist` build artifact.
 
 ## Browser Availability
 

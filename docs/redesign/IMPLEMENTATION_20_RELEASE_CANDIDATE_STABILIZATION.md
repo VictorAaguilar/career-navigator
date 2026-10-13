@@ -69,7 +69,7 @@ No se añade LLM, backend, API, storage, autenticación, analytics, OCR, router,
 - `web:bundle:check` analiza `apps/web/dist/index.html` sin depender de hashes de Vite.
 - El presupuesto inicial queda fijado en `466000` bytes de JS, `16000` bytes de CSS y `2500` bytes de HTML.
 - `pdf.worker`, PDF.js, JSZip y DOCX deben permanecer como chunks diferidos, no como assets iniciales.
-- `release:check` ejecuta tests, typechecks, build, bundle check, audit de producción, RC E2E, Pages E2E local y artifact check en orden.
+- `release:check` ejecuta tests, typechecks, build, bundle check, audit de producción, RC E2E, Pages E2E local y artifact check en orden; al terminar elimina el artifact ignorado `apps/web/dist`.
 
 ## Correcciones Pequeñas Aplicadas
 
