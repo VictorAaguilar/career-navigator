@@ -18,6 +18,7 @@ const reviewStagePath = "../../apps/web/src/components/stages/ReviewStage";
 const previewStagePath = "../../apps/web/src/components/stages/PreviewStage";
 const downloadStagePath = "../../apps/web/src/components/stages/DownloadStage";
 const sharedStagePath = "../../apps/web/src/components/stages/shared";
+const textInputStagePath = "../../apps/web/src/components/stages/TextInputStage";
 
 const syntheticResume = [
   "Desarrollador de software",
@@ -35,6 +36,7 @@ describe("Tailoring acceptance hardening", () => {
   let downloadTailoringDemoDocx: (exportModel: any, dependencies: any) => Promise<any>;
   let TAILORING_DEMO_DOWNLOAD_FILENAME: string;
   let StageHeader: React.ComponentType<any>;
+  let TextInputStage: React.ComponentType<any>;
   let stages: Record<string, React.ComponentType<any>>;
 
   beforeAll(async () => {
@@ -43,6 +45,7 @@ describe("Tailoring acceptance hardening", () => {
     ({ downloadTailoringDemoDocx } = await import(controllerModulePath));
     ({ TAILORING_DEMO_DOWNLOAD_FILENAME } = await import(constantsModulePath));
     ({ StageHeader } = await import(sharedStagePath));
+    ({ TextInputStage } = await import(textInputStagePath));
     stages = {
       start: (await import(startStagePath)).StartStage,
       resume: (await import(resumeStagePath)).ResumeStage,
@@ -99,6 +102,32 @@ describe("Tailoring acceptance hardening", () => {
 
     expect(markup).toContain('id="stage-title"');
     expect(markup).toContain('tabindex="-1"');
+  });
+
+  it("exposes help text, counters, and validation state on editable text areas", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(TextInputStage, {
+        id: "candidate-text",
+        label: "Texto candidato",
+        help: "Edita el texto sin añadir datos no respaldados.",
+        placeholder: "Ejemplo",
+        value: "React TypeScript",
+        error: "El texto supera el límite permitido.",
+        onChange: () => undefined,
+        onClear: () => undefined,
+      }),
+    );
+
+    expect(markup).toContain('<label for="candidate-text">Texto candidato</label>');
+    expect(markup).toContain('id="candidate-text-help"');
+    expect(markup).toContain("Edita el texto sin añadir datos no respaldados.");
+    expect(markup).toContain('aria-describedby="candidate-text-help candidate-text-counter candidate-text-error"');
+    expect(markup).toContain('aria-invalid="true"');
+    expect(markup).toContain('id="candidate-text-counter"');
+    expect(markup).toContain("16 caracteres");
+    expect(markup).toContain('id="candidate-text-error"');
+    expect(markup).toContain('aria-live="polite"');
+    expect(markup).toContain("El texto supera el límite permitido.");
   });
 
   it("keeps non-domain presentation state out of TailoringSession and avoids parallel currentStageId fields", () => {
