@@ -185,6 +185,12 @@ Las ubicaciones no modifican la puntuación, el estado `Cubierto`/`Parcial`/`No 
 
 ## Privacidad
 
+La pantalla inicial muestra una barrera explícita de demo pública:
+
+```text
+Modo demo público: no pegues datos reales, CV personales ni ofertas confidenciales.
+```
+
 La interfaz muestra el aviso:
 
 ```text
