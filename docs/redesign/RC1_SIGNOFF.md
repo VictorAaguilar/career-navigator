@@ -59,6 +59,7 @@ El gate también limpia `apps/web/dist` al terminar para evitar publicar o commi
 - Release notes: `docs/redesign/RELEASE_NOTES_RC1.md`
 - Manual QA: `docs/redesign/RC1_MANUAL_QA_PROTOCOL.md`
 - Manual QA report template: `docs/redesign/RC1_MANUAL_QA_REPORT_TEMPLATE.md`
+- Privacy notice: `docs/redesign/RC1_PRIVACY_NOTICE.md`
 - Validación local: `docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md`
 - Checklist de aceptación: `docs/redesign/TAILORING_DEMO_ACCEPTANCE_CHECKLIST.md`
 - GitHub Pages: `docs/redesign/GITHUB_PAGES_DEPLOYMENT.md`

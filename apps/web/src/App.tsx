@@ -92,7 +92,9 @@ export default function App() {
           </section>
         </main>
       </div>
-      <footer className="privacy-footer">Tus datos no se almacenan en esta versión.</footer>
+      <footer className="privacy-footer">
+        Usa datos ficticios. Tus datos no se almacenan en esta versión.
+      </footer>
     </div>
   );
 }

@@ -425,6 +425,7 @@ describe("Tailoring UI demo MVP", () => {
     const markup = renderToStaticMarkup(React.createElement(App));
 
     expect(markup).toContain("Comenzar");
+    expect(markup).toContain("Usa datos ficticios.");
     expect(markup).toContain("Tus datos no se almacenan en esta versión.");
     expect(markup).toContain("No usa IA generativa");
     expect(markup).not.toContain("Importar oferta");

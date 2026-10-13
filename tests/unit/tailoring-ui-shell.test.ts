@@ -218,6 +218,7 @@ describe("Tailoring UI workflow shell", () => {
     expect(markup).toContain("Currículum");
     expect(markup).toContain("Análisis");
     expect(markup).toContain("Revisión");
+    expect(markup).toContain("Usa datos ficticios.");
     expect(markup).toContain("Tus datos no se almacenan en esta versión.");
   });
 });

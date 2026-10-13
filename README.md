@@ -130,7 +130,7 @@ npm.cmd ci
 npm.cmd run release:check
 ```
 
-Detailed validation, browser-channel notes and production-preview instructions are documented in [docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md](docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md). Release readiness, manual QA, sign-off and known limitations are tracked in [docs/redesign/RELEASE_CANDIDATE_READINESS.md](docs/redesign/RELEASE_CANDIDATE_READINESS.md), [docs/redesign/RC1_MANUAL_QA_PROTOCOL.md](docs/redesign/RC1_MANUAL_QA_PROTOCOL.md), [docs/redesign/RC1_SIGNOFF.md](docs/redesign/RC1_SIGNOFF.md) and [docs/redesign/RELEASE_NOTES_RC1.md](docs/redesign/RELEASE_NOTES_RC1.md).
+Detailed validation, browser-channel notes and production-preview instructions are documented in [docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md](docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md). Release readiness, manual QA, privacy notice, sign-off and known limitations are tracked in [docs/redesign/RELEASE_CANDIDATE_READINESS.md](docs/redesign/RELEASE_CANDIDATE_READINESS.md), [docs/redesign/RC1_MANUAL_QA_PROTOCOL.md](docs/redesign/RC1_MANUAL_QA_PROTOCOL.md), [docs/redesign/RC1_PRIVACY_NOTICE.md](docs/redesign/RC1_PRIVACY_NOTICE.md), [docs/redesign/RC1_SIGNOFF.md](docs/redesign/RC1_SIGNOFF.md) and [docs/redesign/RELEASE_NOTES_RC1.md](docs/redesign/RELEASE_NOTES_RC1.md).
 
 Public GitHub Pages test URL:
 
