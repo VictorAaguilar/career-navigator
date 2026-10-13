@@ -8,7 +8,7 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend, persi
 - [ ] El stepper no permite navegación directa. Automatizado: `tests/unit/tailoring-session-contracts.test.ts`.
 - [ ] `Continuar` permanece bloqueado cuando falta información obligatoria. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] `Anterior` permite volver sin perder datos de la sesión actual. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
-- [ ] El foco se mueve al título de cada etapa al avanzar o retroceder. Manual.
+- [ ] El foco se mueve al título de cada etapa al avanzar o retroceder. Automatizado: `npm run web:e2e`.
 
 ## Entrada De Datos
 
