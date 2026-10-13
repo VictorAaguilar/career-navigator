@@ -429,7 +429,9 @@ describe("Tailoring session contracts", () => {
     expect(markup).toMatch(/<button[^>]*disabled=""/);
     expect(markup).toContain(">Continuar</button>");
     expect(markup.match(/aria-current="step"/g)).toHaveLength(1);
-    expect(markup).not.toContain("<a ");
+    expect(markup.match(/<a /g)).toHaveLength(1);
+    expect(markup).toContain('href="#main-content"');
+    expect(markup).not.toMatch(/href="#(?:resume|job|analysis|requirements|proposals|review|preview|download)"/);
     expect(markup).not.toContain("tailoring_session_v1");
     expect(markup).not.toContain("transitionCount");
     expect(markup).not.toContain("furthestStageId");

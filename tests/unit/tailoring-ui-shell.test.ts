@@ -207,6 +207,9 @@ describe("Tailoring UI workflow shell", () => {
     const markup = renderToStaticMarkup(React.createElement(App));
 
     expect(markup).toContain("Career Navigator");
+    expect(markup).toContain('href="#main-content"');
+    expect(markup).toContain("Saltar al contenido principal");
+    expect(markup).toContain('id="main-content"');
     expect(markup).toContain("Adaptación de currículum asistida y revisable");
     expect(markup).toContain("Comienza una nueva adaptación");
     expect(markup).toContain("Paso 1 de 9");

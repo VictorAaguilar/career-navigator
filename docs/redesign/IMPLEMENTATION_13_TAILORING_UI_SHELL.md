@@ -139,6 +139,8 @@ aria-current="step"
 
 Progress is visible as `Paso X de 9` and sits in a polite live region. Buttons are real buttons with clear disabled states and `focus-visible` styling.
 
+The app also includes a keyboard skip link, `Saltar al contenido principal`, targeting `#main-content` before the header and stepper. It is visually hidden until focused and lets keyboard users jump directly to the active stage panel.
+
 ## Responsive Design
 
 Desktop layout uses a lateral stepper and a main stage panel. Mobile layout switches the stepper to a horizontal compact navigation area and stacks the content.

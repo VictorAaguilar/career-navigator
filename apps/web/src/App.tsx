@@ -39,6 +39,9 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">
+        Saltar al contenido principal
+      </a>
       <AppHeader />
       <div className="app-layout">
         <WorkflowStepper
@@ -46,7 +49,7 @@ export default function App() {
           currentStageId={session.currentStageId}
           getStageStatus={(stageId) => getTailoringSessionStageStatus(session, stageId)}
         />
-        <main className="stage-panel" aria-labelledby="stage-title">
+        <main id="main-content" className="stage-panel" aria-labelledby="stage-title" tabIndex={-1}>
           <section className="stage-card">
             <div className="stage-meta">
               <SessionStatusBadge status={sessionStatus} />
