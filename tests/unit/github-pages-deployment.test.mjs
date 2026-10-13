@@ -47,6 +47,7 @@ function validDistFiles(overrides = {}) {
   return {
     "index.html": [
       "<!doctype html><html><head>",
+      '<meta name="robots" content="noindex,nofollow">',
       `<script type="module" src="${pagesBase}assets/index-abc.js"></script>`,
       `<link rel="stylesheet" href="${pagesBase}assets/index-abc.css">`,
       "</head><body><div id=\"root\"></div></body></html>",
@@ -89,6 +90,7 @@ function mockResponse(status, contentType, body) {
 function smokeResponses(htmlOverride) {
   const html = htmlOverride ?? [
     "<!doctype html><html><head><title>Career Navigator</title>",
+    '<meta name="robots" content="noindex,nofollow">',
     '<script type="module" src="/career-navigator/assets/index.js"></script>',
     '<link rel="stylesheet" href="/career-navigator/assets/index.css">',
     '</head><body><div id="root">Career Navigator</div></body></html>',
@@ -541,6 +543,20 @@ describe("GitHub Pages public smoke", () => {
     expect(result.assetCount).toBe(2);
   });
 
+  it("requires the public RC to stay noindex", async () => {
+    await expect(
+      runGithubPagesSmoke({
+        deployedSiteUrl: "https://victoraaguilar.github.io/career-navigator/",
+        fetchFn: createMockFetch(
+          smokeResponses(
+            '<title>Career Navigator</title><script src="/career-navigator/assets/index.js"></script><link rel="stylesheet" href="/career-navigator/assets/index.css"><div id="root">Career Navigator</div>',
+          ),
+        ),
+        retryDelayMs: 0,
+      }),
+    ).rejects.toThrow("PAGES_SMOKE_ROBOTS_NOINDEX_MISSING");
+  });
+
   it("fails on final 404 HTML", async () => {
     await expect(
       runGithubPagesSmoke({
@@ -608,7 +624,7 @@ describe("GitHub Pages public smoke", () => {
     const responses = smokeResponses();
     responses[`${EXPECTED_PAGES_ORIGIN}${EXPECTED_PAGES_BASE_PATH}`] = [
       mockResponse(404, "text/html", "missing"),
-      mockResponse(200, "text/html", '<title>Career Navigator</title><script src="/career-navigator/assets/index.js"></script><link rel="stylesheet" href="/career-navigator/assets/index.css"><div id="root">Career Navigator</div>'),
+      mockResponse(200, "text/html", '<title>Career Navigator</title><meta name="robots" content="noindex,nofollow"><script src="/career-navigator/assets/index.js"></script><link rel="stylesheet" href="/career-navigator/assets/index.css"><div id="root">Career Navigator</div>'),
     ];
     const fetchFn = createMockFetch(responses);
     const result = await runGithubPagesSmoke({

@@ -68,6 +68,9 @@ export async function runGithubPagesSmoke({
   if (/\b(?:src|href)=["']\/assets\//iu.test(html)) {
     findings.push("PAGES_SMOKE_ROOT_ASSET_REFERENCE");
   }
+  if (!hasRobotsNoIndex(html)) {
+    findings.push("PAGES_SMOKE_ROBOTS_NOINDEX_MISSING");
+  }
 
   const assetUrls = [...scripts, ...styles].map((asset) => resolvePageAsset(siteUrl, asset));
   for (const assetUrl of assetUrls) {
@@ -154,6 +157,14 @@ function extractAttributeValues(html, tagName, attributeName) {
     }
   }
   return values;
+}
+
+function hasRobotsNoIndex(html) {
+  const robotsTags = Array.from(html.matchAll(/<meta\b[^>]*name\s*=\s*["']robots["'][^>]*>/giu)).map((match) => match[0]);
+  return robotsTags.some((tag) => {
+    const content = /content\s*=\s*["']([^"']+)["']/iu.exec(tag)?.[1] ?? "";
+    return content.split(",").map((value) => value.trim().toLowerCase()).includes("noindex");
+  });
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
