@@ -651,6 +651,7 @@ select:focus-visible {
   display: grid;
   gap: 0.45rem;
   min-width: 0;
+  overflow-wrap: anywhere;
   padding-left: var(--space-3);
   border-left: 3px solid var(--color-border);
 }

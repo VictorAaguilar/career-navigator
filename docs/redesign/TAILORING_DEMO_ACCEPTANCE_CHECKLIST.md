@@ -23,7 +23,7 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend, persi
 - [ ] Archivo demasiado grande se rechaza antes de procesar. Automatizado: `tests/unit/resume-file-import.test.ts`.
 - [ ] Texto superior a 24.000 caracteres queda editable pero bloquea avanzar. Automatizado: `tests/unit/resume-file-import.test.ts`.
 - [ ] Editar después de importar invalida análisis y estructura. Automatizado: `tests/unit/resume-file-import.test.ts`, `tests/unit/tailoring-ui-demo.test.ts`.
-- [ ] Seleccionar dos archivos rápidamente conserva solo el último resultado. Manual; contrato protegido por contador local en `useTailoringDemoController`.
+- [ ] Seleccionar dos archivos rápidamente conserva solo el último resultado. Automatizado: `tests/unit/resume-file-import.test.ts`; contrato protegido por contador local en `useTailoringDemoController`.
 - [ ] El campo de oferta conserva el texto pegado. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`.
 - [ ] TXT o MD de oferta importa texto localmente. Automatizado: `tests/unit/tailoring-ui-demo.test.ts`, `npm run web:e2e:pages`.
 - [ ] Los contadores de caracteres se actualizan al escribir. Automatizado: `npm run web:e2e`.
@@ -104,7 +104,7 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend, persi
 - [ ] El panel estructural usa `fieldset`, `legend`, labels visibles y `aria-live`. Automatizado: `tests/unit/resume-file-import.test.ts`.
 - [ ] Las áreas editables exponen ayuda y estado de validación. Automatizado: `tests/unit/tailoring-acceptance-hardening.test.ts`.
 - [ ] La interfaz no produce overflow horizontal general en 320 px, 375 px, 768 px, 1024 px y 1440 px. Automatizado: `npm run web:e2e:rc`; revisión visual manual recomendada.
-- [ ] Las ubicaciones rompen línea y no causan scroll horizontal general en móvil. Manual.
+- [ ] Las ubicaciones rompen línea y no causan scroll horizontal general en móvil. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:rc`.
 - [ ] Las advertencias de ubicación se entienden sin depender de color ni iconos. Automatizado parcialmente: `tests/unit/structured-targeting-explanations.test.ts`.
 - [ ] El flujo básico puede avanzar por teclado hasta confirmar estructura. Automatizado: `npm run web:e2e:rc`; auditoría WCAG manual pendiente.
 
