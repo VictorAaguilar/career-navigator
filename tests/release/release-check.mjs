@@ -11,6 +11,8 @@ const commands = Object.freeze([
   [npmCommand, ["run", "web:bundle:check"]],
   [npmCommand, ["audit", "--omit=dev"]],
   [npmCommand, ["run", "web:e2e:rc"]],
+  [npmCommand, ["run", "web:e2e:pages"]],
+  [npmCommand, ["run", "web:pages:artifact-check"]],
 ]);
 
 for (const [command, args] of commands) {

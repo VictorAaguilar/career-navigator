@@ -168,6 +168,8 @@ describe("Release Candidate stabilization", () => {
       '"run", "web:bundle:check"',
       '"audit", "--omit=dev"',
       '"run", "web:e2e:rc"',
+      '"run", "web:e2e:pages"',
+      '"run", "web:pages:artifact-check"',
     ]);
   });
 
