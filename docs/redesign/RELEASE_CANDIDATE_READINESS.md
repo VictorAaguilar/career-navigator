@@ -27,7 +27,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 | Firefox | No aprobado | Sin runner ni matriz de compatibilidad dedicada | Fuera del alcance de RC1. |
 | Safari | No probado | No disponible en el entorno Windows de validación | Fuera del alcance de RC1. |
 | Responsive | Aprobado con limitaciones | `npm run web:e2e:rc` en 320, 375, 768, 1024 y 1440 px | Revisión visual manual sigue recomendada. |
-| Teclado | Aprobado con limitaciones | `npm run web:e2e:rc` cubre avance básico por teclado | No sustituye auditoría completa WCAG. |
+| Teclado | Aprobado con limitaciones | `npm run web:e2e:rc` cubre skip link y avance básico por teclado | No sustituye auditoría completa WCAG. |
 | Privacidad local | Aprobado | E2E bloquea requests externos; tests buscan storage/red | El usuario debe cerrar o limpiar la pestaña para descartar estado en memoria. |
 | Seguridad de dependencias de producción | Aprobado | `npm audit --omit=dev` | Vulnerabilidades dev conocidas no forman parte del paquete de producción. |
 | GitHub Pages | Aprobado | Workflow `Deploy Career Navigator RC to GitHub Pages`, deploy y public smoke pasan en `universal-redesign` | Es sitio público de evaluación; usar datos ficticios. |
