@@ -68,10 +68,17 @@ async function run() {
   const downloadDir = await mkdtemp(join(tmpdir(), "career-navigator-import-download-"));
   const docxPath = join(tempDir, "synthetic-resume.docx");
   const pdfPath = join(tempDir, "synthetic-resume.pdf");
+  const structuredPdfPath = join(tempDir, "synthetic-structured-resume.pdf");
   const emptyPdfPath = join(tempDir, "synthetic-empty.pdf");
   const fakePdfPath = join(tempDir, "renamed.pdf");
   await writeFile(docxPath, await buildSyntheticDocx());
   await writeFile(pdfPath, buildSyntheticPdf(["PDF React TypeScript", "Pruebas automatizadas"]));
+  await writeFile(structuredPdfPath, buildSyntheticPdf([
+    "PERFIL PROFESIONAL",
+    "PDF React TypeScript",
+    "EXPERIENCIA",
+    "Pruebas automatizadas",
+  ]));
   await writeFile(emptyPdfPath, buildSyntheticPdf([]));
   await writeFile(fakePdfPath, "not a pdf");
 
@@ -106,6 +113,7 @@ async function run() {
     await waitForServer();
     await runDocxFlow(page, docxPath, downloadDir);
     await runPdfFlow(page, pdfPath);
+    await runPdfStructureFlow(page, structuredPdfPath);
     await runPdfNoTextFlow(page, emptyPdfPath);
     await runInvalidFileFlow(page, fakePdfPath);
 
@@ -201,6 +209,20 @@ async function runPdfFlow(page, pdfPath) {
   await expectText(page, "Paso 2 de 9");
 }
 
+async function runPdfStructureFlow(page, pdfPath) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Comenzar" }).click();
+  await page.getByLabel("Seleccionar archivo DOCX o PDF").setInputFiles(pdfPath);
+  await expectText(page, "Texto extraído desde PDF");
+  await expectText(page, "PDF React TypeScript");
+  await page.getByRole("button", { name: "Detectar estructura" }).click();
+  await expectText(page, "secciones detectadas");
+  await expectText(page, "PERFIL PROFESIONAL");
+  await expectText(page, "EXPERIENCIA");
+  await page.getByRole("button", { name: "Confirmar estructura" }).click();
+  await expectText(page, "Modo estructurado seleccionado");
+}
+
 async function runPdfNoTextFlow(page, emptyPdfPath) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Comenzar" }).click();
@@ -246,9 +268,9 @@ async function buildSyntheticDocx() {
 
 function buildSyntheticPdf(lines) {
   const textCommands = lines
-    .map((line, index) => `72 ${720 - index * 24} Td (${escapePdfText(line)}) Tj`)
+    .map((line, index) => `BT /F1 18 Tf 72 ${720 - index * 24} Td (${escapePdfText(line)}) Tj ET`)
     .join("\n");
-  const stream = lines.length === 0 ? "" : `BT /F1 18 Tf ${textCommands} ET`;
+  const stream = lines.length === 0 ? "" : textCommands;
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
     "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
