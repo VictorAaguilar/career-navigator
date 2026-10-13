@@ -76,6 +76,10 @@ https://victoraaguilar.github.io/career-navigator/
 
 El sitio público es una Release Candidate de evaluación. Usa datos ficticios durante las pruebas.
 
+## Sign-Off
+
+La decisión formal de cierre de RC1 está documentada en `docs/redesign/RC1_SIGNOFF.md`.
+
 ## Limitaciones
 
 - No hay backend, login, almacenamiento ni sincronización.
