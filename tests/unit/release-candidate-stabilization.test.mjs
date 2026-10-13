@@ -255,7 +255,21 @@ describe("Release Candidate stabilization", () => {
     expect(readme).toContain("Release Candidate");
     expect(readme).toContain("npm.cmd run release:check");
     expect(readme).toContain("docs/redesign/LOCAL_INSTALLATION_AND_VALIDATION.md");
+    expect(readme).toContain("docs/redesign/RC1_MANUAL_QA_PROTOCOL.md");
     expect(readme).toContain("docs/redesign/RC1_SIGNOFF.md");
+  });
+
+  it("documents the manual QA protocol for non-automated RC1 risks", () => {
+    const manualQa = readRepoFile("docs/redesign/RC1_MANUAL_QA_PROTOCOL.md");
+
+    expect(manualQa).toContain("Usar solo datos sintéticos");
+    expect(manualQa).toContain("Accesibilidad manual");
+    expect(manualQa).toContain("Responsive visual");
+    expect(manualQa).toContain("DOCX en lectores reales");
+    expect(manualQa).toContain("Firefox");
+    expect(manualQa).toContain("Safari");
+    expect(manualQa).toContain("Privacidad para datos reales");
+    expect(manualQa).toContain("aprobada_para_demo_sintetica");
   });
 
   it("documents the RC1 sign-off decision without expanding production scope", () => {
@@ -263,6 +277,7 @@ describe("Release Candidate stabilization", () => {
 
     expect(signoff).toContain("RC1 queda aceptada para evaluación pública controlada");
     expect(signoff).toContain("datos sintéticos");
+    expect(signoff).toContain("docs/redesign/RC1_MANUAL_QA_PROTOCOL.md");
     expect(signoff).toContain("npm run release:check");
     expect(signoff).toContain("npm audit --omit=dev");
     expect(signoff).toContain("Firefox no queda aprobado");
