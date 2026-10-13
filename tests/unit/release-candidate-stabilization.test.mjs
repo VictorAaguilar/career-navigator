@@ -261,6 +261,7 @@ describe("Release Candidate stabilization", () => {
 
   it("documents the manual QA protocol for non-automated RC1 risks", () => {
     const manualQa = readRepoFile("docs/redesign/RC1_MANUAL_QA_PROTOCOL.md");
+    const template = readRepoFile("docs/redesign/RC1_MANUAL_QA_REPORT_TEMPLATE.md");
 
     expect(manualQa).toContain("Usar solo datos sintéticos");
     expect(manualQa).toContain("Accesibilidad manual");
@@ -270,6 +271,14 @@ describe("Release Candidate stabilization", () => {
     expect(manualQa).toContain("Safari");
     expect(manualQa).toContain("Privacidad para datos reales");
     expect(manualQa).toContain("aprobada_para_demo_sintetica");
+    expect(manualQa).toContain("docs/redesign/RC1_MANUAL_QA_REPORT_TEMPLATE.md");
+    expect(template).toContain("No rellenar con datos personales reales");
+    expect(template).toContain("Gate Automatizado Previo");
+    expect(template).toContain("Estados permitidos");
+    expect(template).toContain("Microsoft Word");
+    expect(template).toContain("LibreOffice Writer");
+    expect(template).toContain("Google Docs importado manualmente");
+    expect(template).toContain("RC1 limitada a datos sintéticos");
   });
 
   it("documents the RC1 sign-off decision without expanding production scope", () => {

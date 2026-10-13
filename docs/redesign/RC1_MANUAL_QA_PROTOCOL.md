@@ -129,3 +129,5 @@ El resultado de una ronda manual debe registrar:
 - áreas con limitaciones;
 - bloqueos;
 - decisión final: `aprobada_para_demo_sintetica`, `requiere_correcciones` o `no_aprobada`.
+
+Usar `docs/redesign/RC1_MANUAL_QA_REPORT_TEMPLATE.md` como plantilla para registrar cada ronda.
