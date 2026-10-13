@@ -173,6 +173,15 @@ describe("Release Candidate stabilization", () => {
     ]);
   });
 
+  it("cleans the ignored web dist artifact after release validation", () => {
+    const source = readRepoFile("tests/release/release-check.mjs");
+
+    expect(source).toContain('resolve(repoRoot, "apps", "web", "dist")');
+    expect(source).toContain("cleanupDist();");
+    expect(source).toContain("rmSync(distDir, { recursive: true, force: true });");
+    expect(source).toContain("Refusing to clean path outside repository");
+  });
+
   it("runs RC E2E against production preview instead of the development server", () => {
     const source = readRepoFile("tests/e2e/release-candidate-flow.mjs");
 
