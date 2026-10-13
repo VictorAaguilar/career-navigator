@@ -64,7 +64,7 @@ No se añade LLM, backend, API, storage, autenticación, analytics, OCR, router,
 - El runner RC valida inicio, parsing estructural, oferta, análisis, evidencias, propuestas, revisión humana, vista previa y descarga DOCX.
 - El runner RC comprueba ausencia de errores de consola y ausencia de requests externos.
 - El runner RC revisa viewports de 320, 375, 768, 1024 y 1440 px para detectar overflow horizontal general.
-- El runner RC cubre navegación básica por teclado hasta confirmar estructura.
+- El runner RC cubre el skip link y navegación básica por teclado hasta confirmar estructura.
 - El DOCX descargado se valida como ZIP OOXML y se comprueba que no contenga IDs técnicos ni metadatos de trazabilidad de UI.
 - `web:bundle:check` analiza `apps/web/dist/index.html` sin depender de hashes de Vite.
 - El presupuesto inicial queda fijado en `466000` bytes de JS, `16000` bytes de CSS y `2500` bytes de HTML.

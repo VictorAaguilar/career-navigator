@@ -53,6 +53,7 @@ export function useTailoringDemoController() {
   const resumeTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const jobTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const resumeStructureSummaryRef = useRef<HTMLDivElement | null>(null);
+  const stageFocusInitializedRef = useRef(false);
   const resumeImportSequenceRef = useRef(0);
   const jobImportSequenceRef = useRef(0);
   const session = state.session;
@@ -65,6 +66,10 @@ export function useTailoringDemoController() {
   const guardMessage = getStageGuardMessage(state);
 
   useEffect(() => {
+    if (!stageFocusInitializedRef.current) {
+      stageFocusInitializedRef.current = true;
+      return;
+    }
     titleRef.current?.focus({ preventScroll: true });
   }, [session.currentStageId]);
 

@@ -106,6 +106,7 @@ Checklist para validar el MVP end-to-end antes de incorporar LLM, backend, persi
 - [ ] La interfaz no produce overflow horizontal general en 320 px, 375 px, 768 px, 1024 px y 1440 px. Automatizado: `npm run web:e2e:rc`; revisión visual manual recomendada.
 - [ ] Las ubicaciones rompen línea y no causan scroll horizontal general en móvil. Automatizado: `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:rc`.
 - [ ] Las advertencias de ubicación se entienden sin depender de color ni iconos. Automatizado parcialmente: `tests/unit/structured-targeting-explanations.test.ts`.
+- [ ] El enlace `Saltar al contenido principal` es el primer foco de teclado y mueve el foco al panel principal. Automatizado: `npm run web:e2e:rc`.
 - [ ] El flujo básico puede avanzar por teclado hasta confirmar estructura. Automatizado: `npm run web:e2e:rc`; auditoría WCAG manual pendiente.
 
 ## Privacidad

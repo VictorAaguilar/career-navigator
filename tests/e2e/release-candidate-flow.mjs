@@ -282,6 +282,18 @@ async function runPagesImportScenario(page, docxPath, pdfPath, offerPath, downlo
 async function runKeyboardScenario(page) {
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.goto(baseUrl, { waitUntil: "networkidle" });
+  await page.keyboard.press("Tab");
+  await assertActiveElement(page, {
+    id: "",
+    textIncludes: "Saltar al contenido principal",
+    errorCode: "RC_SKIP_LINK_NOT_FIRST_FOCUS",
+  });
+  await page.keyboard.press("Enter");
+  await assertActiveElement(page, {
+    id: "main-content",
+    textIncludes: "Demo local de adaptación revisable",
+    errorCode: "RC_SKIP_LINK_TARGET_NOT_FOCUSED",
+  });
   await focusByKeyboard(page, "Comenzar");
   await page.keyboard.press("Enter");
   await expectText(page, "Currículum");
@@ -309,7 +321,10 @@ async function focusByKeyboard(page, accessibleName) {
         const label = active.labels?.[0]?.textContent ?? "";
         return `${label} ${active.getAttribute("aria-label") ?? ""}`.trim();
       }
-      return active.textContent ?? "";
+      if (active instanceof HTMLButtonElement || active instanceof HTMLAnchorElement) {
+        return active.textContent ?? "";
+      }
+      return "";
     });
     if (activeName.includes(accessibleName)) {
       return;
@@ -317,6 +332,19 @@ async function focusByKeyboard(page, accessibleName) {
     await page.keyboard.press("Tab");
   }
   throw new Error(`RC_KEYBOARD_FOCUS_NOT_FOUND ${accessibleName}`);
+}
+
+async function assertActiveElement(page, { id, textIncludes, errorCode }) {
+  const active = await page.evaluate(() => {
+    const element = document.activeElement;
+    return {
+      id: element?.id ?? "",
+      text: element?.textContent ?? "",
+    };
+  });
+  if (active.id !== id || !active.text.includes(textIncludes)) {
+    throw new Error(`${errorCode} ${JSON.stringify(active)}`);
+  }
 }
 
 function installPageGuards(page) {
