@@ -398,6 +398,13 @@ describe("structured targeting explanations", () => {
     expect(text).not.toMatch(/section-\d|block-\d|proposal\||requirement_\d|evidence_\d/);
   });
 
+  it("allows all visible location explanations to wrap long text on narrow viewports", () => {
+    const styles = readFileSync(join(process.cwd(), "apps/web/src/styles.css"), "utf8");
+
+    expect(styles).toMatch(/\.location-explanation\s*\{[^}]*min-width:\s*0;[^}]*overflow-wrap:\s*anywhere;/s);
+    expect(styles).toMatch(/\.evidence-location-list,[^}]*\.location-reason-list,[^}]*\.location-warning-list\s*\{[^}]*overflow-wrap:\s*anywhere;/s);
+  });
+
   it("does not use Date, random, UUID, storage, network, analytics, LLMs, logs or absolute paths", () => {
     const dateNowSpy = vi.spyOn(Date, "now");
     const randomSpy = vi.spyOn(Math, "random");

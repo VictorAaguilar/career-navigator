@@ -326,6 +326,24 @@ describe("local resume file import", () => {
     expect(markup).toContain("FORMACIÓN");
   });
 
+  it("guards rapid resume and job file selections with local sequence counters", () => {
+    const source = readFileSync(
+      join(process.cwd(), "apps/web/src/app/use-tailoring-demo-controller.ts"),
+      "utf8",
+    );
+
+    expect(source).toContain("const resumeImportSequenceRef = useRef(0);");
+    expect(source).toContain("const jobImportSequenceRef = useRef(0);");
+    expect(source).toContain("const sequence = resumeImportSequenceRef.current + 1;");
+    expect(source).toContain("resumeImportSequenceRef.current = sequence;");
+    expect(source.match(/resumeImportSequenceRef\.current !== sequence/gu)).toHaveLength(2);
+    expect(source).toContain("resumeImportSequenceRef.current += 1;");
+    expect(source).toContain("const sequence = jobImportSequenceRef.current + 1;");
+    expect(source).toContain("jobImportSequenceRef.current = sequence;");
+    expect(source.match(/jobImportSequenceRef\.current !== sequence/gu)).toHaveLength(2);
+    expect(source).toContain("jobImportSequenceRef.current += 1;");
+  });
+
   it("keeps import modules free of storage, network, OCR, LLM, logs, timestamps and local paths", () => {
     const source = [
       "apps/web/src/app/resume-file-import-contract.ts",
