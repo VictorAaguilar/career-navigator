@@ -83,6 +83,8 @@ http://127.0.0.1:4178/
 13. Genera la vista previa.
 14. Pulsa `Descargar currículum adaptado`.
 
+En Descargar, `Nueva adaptación` vuelve a Inicio con una sesión vacía: descarta textos, importaciones, análisis, decisiones, vista previa y estado DOCX. Debes confirmar de nuevo el uso de datos ficticios. El botón queda deshabilitado mientras se genera el DOCX. Los archivos ya descargados permanecen en el dispositivo; esta acción no los elimina.
+
 ## Revisión Estructural
 
 La detección estructural agrupa líneas existentes del currículum. No crea cargos, empresas, fechas, habilidades, certificaciones ni texto nuevo.

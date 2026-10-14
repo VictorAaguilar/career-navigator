@@ -124,6 +124,7 @@ async function run() {
     const page = await browser.newPage({ acceptDownloads: true });
     const telemetry = installPageGuards(page);
     await runReleaseCandidateScenario(page, downloadDir);
+    await runRestartScenario(page);
     if (options.includeImports) {
       await runPagesImportScenario(page, docxPath, pdfPath, offerPath, downloadDir);
     }
@@ -211,6 +212,21 @@ async function runReleaseCandidateScenario(page, downloadDir) {
   await assertDownloadedDocx(downloadPath);
   await assertNoVisibleTechnicalIds(page);
   await assertSingleCurrentStep(page);
+}
+
+async function runRestartScenario(page) {
+  await page.getByRole("button", { name: "Nueva adaptación", exact: true }).click();
+  await expectText(page, "Paso 1 de 9");
+  await confirmDemoAndStart(page);
+  if (await page.getByRole("textbox", { name: "Currículum", exact: true }).inputValue() !== "") {
+    throw new Error("RC_RESTART_RETAINED_RESUME");
+  }
+  await page.getByRole("textbox", { name: "Currículum", exact: true }).fill("EXPERIENCIA\nReact");
+  await page.getByRole("button", { name: "Usar análisis de texto plano" }).click();
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  if (await page.getByRole("textbox", { name: "Oferta laboral", exact: true }).inputValue() !== "") {
+    throw new Error("RC_RESTART_RETAINED_JOB");
+  }
 }
 
 async function runResponsiveScenario(page) {

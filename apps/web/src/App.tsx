@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AppHeader } from "./components/AppHeader";
 import { SessionStatusBadge } from "./components/SessionStatusBadge";
 import { TailoringDemoStage } from "./components/stages/TailoringDemoStage";
@@ -8,6 +9,11 @@ import { getTailoringSessionStageStatus } from "./app/tailoring-session";
 import { useTailoringDemoController } from "./app/use-tailoring-demo-controller";
 
 export default function App() {
+  const [sessionKey, setSessionKey] = useState(0);
+  return <TailoringApp key={sessionKey} onRestart={() => setSessionKey((value) => value + 1)} />;
+}
+
+function TailoringApp({ onRestart }: { onRestart: () => void }) {
   const controller = useTailoringDemoController();
   const {
     state,
@@ -89,6 +95,11 @@ export default function App() {
               onNext={handleNext}
               guardMessage={guardMessage}
             />
+            {currentStage.id === "download" ? (
+              <button type="button" onClick={onRestart} disabled={state.docx.status === "generating"}>
+                Nueva adaptación
+              </button>
+            ) : null}
           </section>
         </main>
       </div>
