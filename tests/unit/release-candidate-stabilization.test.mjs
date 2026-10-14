@@ -240,6 +240,7 @@ describe("Release Candidate stabilization", () => {
     expect(privacyNotice).toContain("datos sintéticos");
     expect(privacyNotice).toContain("no usar datos reales");
     expect(privacyNotice).toContain("Modo demo público: no pegues datos reales");
+    expect(privacyNotice).toContain("Confirmo que usaré únicamente datos ficticios");
     expect(privacyNotice).toContain("no son controles de acceso");
     expect(privacyNotice).toContain("política de privacidad publicada");
   });

@@ -84,7 +84,7 @@ export default function App() {
             />
             <WorkflowNavigation
               canGoBackward={canGoBackward}
-              canGoForward={canGoForward}
+              canGoForward={currentStage.id !== "start" && canGoForward}
               onPrevious={handlePrevious}
               onNext={handleNext}
               guardMessage={guardMessage}

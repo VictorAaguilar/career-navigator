@@ -14,6 +14,15 @@ La pantalla inicial debe mostrar un aviso visible equivalente a:
 Modo demo público: no pegues datos reales, CV personales ni ofertas confidenciales.
 ```
 
+El botón `Comenzar` debe permanecer deshabilitado hasta que la persona usuaria marque la confirmación:
+El botón `Continuar` permanece deshabilitado en Inicio; el acceso se realiza mediante `Comenzar`.
+
+```text
+Confirmo que usaré únicamente datos ficticios en esta demo pública.
+```
+
+La confirmación es un recordatorio de uso, no detecta datos personales ni constituye consentimiento legal. Se reinicia al volver a montar Inicio o recargar la pestaña y no se almacena.
+
 ## Qué Procesa
 
 La demo puede procesar localmente en el navegador:

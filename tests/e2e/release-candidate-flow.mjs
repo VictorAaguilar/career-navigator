@@ -145,7 +145,7 @@ async function runReleaseCandidateScenario(page, downloadDir) {
   await assertNoHorizontalOverflow(page, "start");
   await assertSingleCurrentStep(page);
 
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await expectText(page, "Currículum");
   await page.getByRole("textbox", { name: "Currículum" }).fill(structuredCv);
   await page.getByRole("button", { name: "Detectar estructura" }).click();
@@ -218,7 +218,7 @@ async function runResponsiveScenario(page) {
     await page.setViewportSize(viewport);
     await page.goto(baseUrl, { waitUntil: "networkidle" });
     await assertNoHorizontalOverflow(page, `viewport-${viewport.width}-start`);
-    await page.getByRole("button", { name: "Comenzar" }).click();
+    await confirmDemoAndStart(page);
     await page.getByRole("textbox", { name: "Currículum" }).fill(structuredCv);
     await page.getByRole("button", { name: "Detectar estructura" }).click();
     await expectText(page, "secciones detectadas");
@@ -237,7 +237,7 @@ async function runResponsiveScenario(page) {
 
 async function runPagesImportScenario(page, docxPath, pdfPath, offerPath, downloadDir) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByLabel("Seleccionar archivo DOCX o PDF").setInputFiles(docxPath);
   await expectText(page, "Texto extraído desde DOCX");
   await expectText(page, "DOCX React TypeScript");
@@ -273,7 +273,7 @@ async function runPagesImportScenario(page, docxPath, pdfPath, offerPath, downlo
   await assertDownloadedDocx(downloadPath);
 
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByLabel("Seleccionar archivo DOCX o PDF").setInputFiles(pdfPath);
   await expectText(page, "Texto extraído desde PDF");
   await expectText(page, "PDF React TypeScript");
@@ -294,6 +294,8 @@ async function runKeyboardScenario(page) {
     textIncludes: "Demo local de adaptación revisable",
     errorCode: "RC_SKIP_LINK_TARGET_NOT_FOCUSED",
   });
+  await focusByKeyboard(page, "Confirmo que usaré");
+  await page.keyboard.press("Space");
   await focusByKeyboard(page, "Comenzar");
   await page.keyboard.press("Enter");
   await expectText(page, "Currículum");
@@ -332,6 +334,25 @@ async function focusByKeyboard(page, accessibleName) {
     await page.keyboard.press("Tab");
   }
   throw new Error(`RC_KEYBOARD_FOCUS_NOT_FOUND ${accessibleName}`);
+}
+
+async function confirmDemoAndStart(page) {
+  const confirmation = page.getByLabel("Confirmo que usaré únicamente datos ficticios en esta demo pública.");
+  const start = page.getByRole("button", { name: "Comenzar" });
+  const next = page.getByRole("button", { name: "Continuar" });
+  if (await confirmation.isChecked() || await start.isEnabled() || await next.isEnabled()) {
+    throw new Error("RC_DEMO_CONFIRMATION_BYPASS");
+  }
+  await confirmation.check();
+  if (!await start.isEnabled() || await next.isEnabled()) {
+    throw new Error("RC_DEMO_CONFIRMATION_NOT_ENABLED");
+  }
+  await confirmation.uncheck();
+  if (await start.isEnabled()) {
+    throw new Error("RC_DEMO_CONFIRMATION_NOT_REVOKED");
+  }
+  await confirmation.check();
+  await page.getByRole("button", { name: "Comenzar" }).click();
 }
 
 async function assertActiveElement(page, { id, textIncludes, errorCode }) {

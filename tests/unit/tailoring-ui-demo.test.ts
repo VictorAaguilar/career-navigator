@@ -427,6 +427,8 @@ describe("Tailoring UI demo MVP", () => {
     expect(markup).toContain("Comenzar");
     expect(markup).toContain("Usa datos ficticios.");
     expect(markup).toContain("Modo demo público: no pegues datos reales");
+    expect(markup).toContain("Confirmo que usaré únicamente datos ficticios en esta demo pública.");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*>Comenzar<\/button>/);
     expect(markup).toContain("Tus datos no se almacenan en esta versión.");
     expect(markup).toContain("No usa IA generativa");
     expect(markup).not.toContain("Importar oferta");

@@ -143,7 +143,7 @@ async function run() {
 
 async function runTargetingScenario(page, downloadDir) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByRole("textbox", { name: "Currículum" }).fill(structuredCv);
   await page.getByRole("button", { name: "Detectar estructura" }).click();
   await expectText(page, "secciones detectadas");
@@ -222,6 +222,11 @@ async function assertNoVisibleTechnicalIds(page) {
 
 async function expectText(page, text) {
   await page.getByText(text, { exact: false }).first().waitFor({ timeout: 15_000 });
+}
+
+async function confirmDemoAndStart(page) {
+  await page.getByLabel("Confirmo que usaré únicamente datos ficticios en esta demo pública.").check();
+  await page.getByRole("button", { name: "Comenzar" }).click();
 }
 
 try {
