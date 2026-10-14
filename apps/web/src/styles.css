@@ -570,6 +570,24 @@ select:focus-visible {
   font-weight: 900;
 }
 
+.demo-safety-confirmation {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  max-width: 38rem;
+  margin-top: var(--space-2);
+  color: var(--color-text);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.demo-safety-confirmation input {
+  flex: 0 0 auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+}
+
 .feature-grid,
 .metric-grid {
   display: grid;

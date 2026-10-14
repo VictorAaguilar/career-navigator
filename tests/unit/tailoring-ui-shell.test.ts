@@ -220,6 +220,7 @@ describe("Tailoring UI workflow shell", () => {
     expect(markup).toContain("Revisión");
     expect(markup).toContain("Usa datos ficticios.");
     expect(markup).toContain("Modo demo público: no pegues datos reales");
+    expect(markup).toContain("Confirmo que usaré únicamente datos ficticios en esta demo pública.");
     expect(markup).toContain("Tus datos no se almacenan en esta versión.");
   });
 });

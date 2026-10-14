@@ -145,7 +145,7 @@ async function run() {
 
 async function runStructuredScenario(page, downloadDir) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByRole("textbox", { name: "Currículum" }).fill(structuredCv);
   await page.getByRole("button", { name: "Detectar estructura" }).click();
   await expectText(page, "secciones detectadas");
@@ -179,7 +179,7 @@ async function runStructuredScenario(page, downloadDir) {
 
 async function runPlainFallbackScenario(page) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByRole("textbox", { name: "Currículum" }).fill("React TypeScript Vitest Git");
   await page.getByRole("button", { name: "Detectar estructura" }).click();
   await expectText(page, "No se detectaron encabezados seguros");
@@ -194,7 +194,7 @@ async function runPlainFallbackScenario(page) {
 
 async function runInvalidationScenario(page) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   const resumeBox = page.getByRole("textbox", { name: "Currículum" });
   await resumeBox.fill("EXPERIENCIA\nReact");
   await page.getByRole("button", { name: "Detectar estructura" }).click();
@@ -247,6 +247,11 @@ async function completeReviewAndDownload(page, downloadDir, expectedDocxText) {
 
 async function expectText(page, text) {
   await page.getByText(text, { exact: false }).first().waitFor({ timeout: 15_000 });
+}
+
+async function confirmDemoAndStart(page) {
+  await page.getByLabel("Confirmo que usaré únicamente datos ficticios en esta demo pública.").check();
+  await page.getByRole("button", { name: "Comenzar" }).click();
 }
 
 async function expectSelectValue(locator, value) {

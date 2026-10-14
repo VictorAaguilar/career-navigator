@@ -1,4 +1,8 @@
+import { useState } from "react";
+
 export function StartStage({ onStart }: { onStart: () => void }) {
+  const [syntheticDataConfirmed, setSyntheticDataConfirmed] = useState(false);
+
   return (
     <div className="demo-section">
       <div className="intro-band">
@@ -15,8 +19,16 @@ export function StartStage({ onStart }: { onStart: () => void }) {
           <p className="demo-safety-note">
             Modo demo público: no pegues datos reales, CV personales ni ofertas confidenciales.
           </p>
+          <label className="demo-safety-confirmation">
+            <input
+              type="checkbox"
+              checked={syntheticDataConfirmed}
+              onChange={(event) => setSyntheticDataConfirmed(event.currentTarget.checked)}
+            />
+            Confirmo que usaré únicamente datos ficticios en esta demo pública.
+          </label>
         </div>
-        <button type="button" className="primary-action" onClick={onStart}>
+        <button type="button" className="primary-action" onClick={onStart} disabled={!syntheticDataConfirmed}>
           Comenzar
         </button>
       </div>

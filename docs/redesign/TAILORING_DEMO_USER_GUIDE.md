@@ -68,19 +68,20 @@ http://127.0.0.1:4178/
 
 ## Flujo Manual
 
-1. Pulsa `Comenzar`.
-2. Pega el texto del currículum o importa un DOCX/PDF en la etapa `Currículum`.
-3. Pulsa `Detectar estructura`.
-4. Revisa las secciones detectadas.
-5. Cambia `Tipo de sección` si una categoría no es correcta.
-6. Pulsa `Confirmar estructura` o `Usar análisis de texto plano`.
-7. Pega el texto de la oferta laboral o importa una oferta TXT/MD local.
-8. Ejecuta el análisis determinista.
-9. Revisa requisitos y evidencias.
-10. Revisa las propuestas.
-11. Aprueba, rechaza o edita cada propuesta.
-12. Genera la vista previa.
-13. Pulsa `Descargar currículum adaptado`.
+1. Marca la confirmación de uso exclusivo con datos ficticios.
+2. Pulsa `Comenzar`.
+3. Pega el texto del currículum o importa un DOCX/PDF en la etapa `Currículum`.
+4. Pulsa `Detectar estructura`.
+5. Revisa las secciones detectadas.
+6. Cambia `Tipo de sección` si una categoría no es correcta.
+7. Pulsa `Confirmar estructura` o `Usar análisis de texto plano`.
+8. Pega el texto de la oferta laboral o importa una oferta TXT/MD local.
+9. Ejecuta el análisis determinista.
+10. Revisa requisitos y evidencias.
+11. Revisa las propuestas.
+12. Aprueba, rechaza o edita cada propuesta.
+13. Genera la vista previa.
+14. Pulsa `Descargar currículum adaptado`.
 
 ## Revisión Estructural
 
@@ -189,6 +190,12 @@ La pantalla inicial muestra una barrera explícita de demo pública:
 
 ```text
 Modo demo público: no pegues datos reales, CV personales ni ofertas confidenciales.
+```
+
+`Comenzar` permanece deshabilitado hasta marcar:
+
+```text
+Confirmo que usaré únicamente datos ficticios en esta demo pública.
 ```
 
 La interfaz muestra el aviso:

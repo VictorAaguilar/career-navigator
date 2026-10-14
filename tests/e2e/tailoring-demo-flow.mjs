@@ -103,7 +103,7 @@ async function run() {
     await page.goto(baseUrl, { waitUntil: "networkidle" });
 
     await expectText(page, "Tus datos no se almacenan en esta versión.");
-    await page.getByRole("button", { name: "Comenzar" }).click();
+    await confirmDemoAndStart(page);
     await expectStageTitleFocused(page, "Introduce tu experiencia profesional");
     await page.getByRole("textbox", { name: "Currículum" }).fill(cvText);
     await expectText(page, `${cvText.length} caracteres`);
@@ -194,6 +194,11 @@ async function run() {
 
 async function expectText(page, text) {
   await page.getByText(text, { exact: false }).first().waitFor({ timeout: 10_000 });
+}
+
+async function confirmDemoAndStart(page) {
+  await page.getByLabel("Confirmo que usaré únicamente datos ficticios en esta demo pública.").check();
+  await page.getByRole("button", { name: "Comenzar" }).click();
 }
 
 async function expectStageTitleFocused(page, title) {

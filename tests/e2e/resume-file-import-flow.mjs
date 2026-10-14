@@ -136,7 +136,7 @@ async function run() {
 
 async function runDocxFlow(page, docxPath, downloadDir) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByLabel("Seleccionar archivo DOCX o PDF").setInputFiles(docxPath);
   await expectText(page, "Texto extraído desde DOCX");
   await expectText(page, "El formato visual");
@@ -198,7 +198,7 @@ async function runDocxFlow(page, docxPath, downloadDir) {
 
 async function runPdfFlow(page, pdfPath) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByLabel("Seleccionar archivo DOCX o PDF").setInputFiles(pdfPath);
   await expectText(page, "Texto extraído desde PDF");
   await expectText(page, "orden del texto puede variar");
@@ -211,7 +211,7 @@ async function runPdfFlow(page, pdfPath) {
 
 async function runPdfStructureFlow(page, pdfPath) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByLabel("Seleccionar archivo DOCX o PDF").setInputFiles(pdfPath);
   await expectText(page, "Texto extraído desde PDF");
   await expectText(page, "PDF React TypeScript");
@@ -225,7 +225,7 @@ async function runPdfStructureFlow(page, pdfPath) {
 
 async function runPdfNoTextFlow(page, emptyPdfPath) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByLabel("Seleccionar archivo DOCX o PDF").setInputFiles(emptyPdfPath);
   await expectText(page, "no incluye OCR");
   await page.getByRole("textbox", { name: "Currículum" }).fill("Texto pegado manualmente");
@@ -234,13 +234,18 @@ async function runPdfNoTextFlow(page, emptyPdfPath) {
 
 async function runInvalidFileFlow(page, fakePdfPath) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Comenzar" }).click();
+  await confirmDemoAndStart(page);
   await page.getByLabel("Seleccionar archivo DOCX o PDF").setInputFiles(fakePdfPath);
   await expectText(page, "no coincide con un DOCX o PDF válido");
 }
 
 async function expectText(page, text) {
   await page.getByText(text, { exact: false }).first().waitFor({ timeout: 15_000 });
+}
+
+async function confirmDemoAndStart(page) {
+  await page.getByLabel("Confirmo que usaré únicamente datos ficticios en esta demo pública.").check();
+  await page.getByRole("button", { name: "Comenzar" }).click();
 }
 
 async function expectInputValue(locator, text) {

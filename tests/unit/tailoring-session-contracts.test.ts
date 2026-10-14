@@ -427,9 +427,10 @@ describe("Tailoring session contracts", () => {
     expect(markup).toContain("Paso 1 de 9");
     expect(markup).toContain("Usa datos ficticios.");
     expect(markup).toContain("Modo demo público: no pegues datos reales");
+    expect(markup).toContain("Confirmo que usaré únicamente datos ficticios en esta demo pública.");
     expect(markup).toContain("Tus datos no se almacenan en esta versión.");
     expect(markup).toMatch(/<button[^>]*disabled=""/);
-    expect(markup).toContain(">Continuar</button>");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*>Continuar<\/button>/);
     expect(markup.match(/aria-current="step"/g)).toHaveLength(1);
     expect(markup.match(/<a /g)).toHaveLength(1);
     expect(markup).toContain('href="#main-content"');
