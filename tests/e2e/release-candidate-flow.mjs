@@ -304,6 +304,7 @@ async function runKeyboardScenario(page) {
   await focusByKeyboard(page, "Detectar estructura");
   await page.keyboard.press("Enter");
   await expectText(page, "secciones detectadas");
+  await page.waitForFunction(() => document.activeElement?.classList.contains("structure-summary"));
   await focusByKeyboard(page, "Tipo de sección");
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowUp");
