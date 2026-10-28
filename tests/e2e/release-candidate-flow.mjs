@@ -194,6 +194,11 @@ async function runReleaseCandidateScenario(page, downloadDir) {
   await page.getByRole("button", { name: "Continuar" }).click();
 
   await expectText(page, "Cambios aplicados");
+  for (const heading of ["PERFIL PROFESIONAL", "EXPERIENCIA", "FORMACIÓN", "HABILIDADES", "IDIOMAS"]) {
+    if (await page.locator(".resume-preview").getByText(heading, { exact: true }).count() !== 1) {
+      throw new Error(`RC_DUPLICATE_PREVIEW_HEADING ${heading}`);
+    }
+  }
   await expectText(page, "Editada y aceptada");
   if (proposalCount > 1) {
     await expectText(page, "Cambios no aplicados");
@@ -428,6 +433,14 @@ function assertNoTelemetryFailures({ consoleErrors, externalRequests }) {
 }
 
 async function assertNoHorizontalOverflow(page, label) {
+  await page.waitForFunction(() => {
+    const nav = document.querySelector(".workflow-stepper");
+    const current = nav?.querySelector('[aria-current="step"]');
+    if (!nav || !current || nav.scrollWidth <= nav.clientWidth) return true;
+    const bounds = nav.getBoundingClientRect();
+    const step = current.getBoundingClientRect();
+    return step.left >= bounds.left - 1 && step.right <= bounds.right + 1;
+  });
   const result = await page.evaluate(() => ({
     documentWidth: document.documentElement.scrollWidth,
     viewportWidth: document.documentElement.clientWidth,
@@ -464,6 +477,12 @@ async function assertDownloadedDocx(downloadPath) {
   const documentXml = await zip.file("word/document.xml")?.async("string");
   if (contentTypes === undefined || documentXml === undefined) {
     throw new Error("RC_DOCX_REQUIRED_PART_MISSING");
+  }
+  const headingTexts = [...documentXml.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)].map((match) => match[1]);
+  for (const heading of ["PERFIL PROFESIONAL", "EXPERIENCIA", "FORMACIÓN", "HABILIDADES", "IDIOMAS"]) {
+    if (headingTexts.filter((text) => text === heading).length > 1) {
+      throw new Error(`RC_DUPLICATE_DOCX_HEADING ${heading}`);
+    }
   }
   if (
     !documentXml.includes("TypeScript") ||

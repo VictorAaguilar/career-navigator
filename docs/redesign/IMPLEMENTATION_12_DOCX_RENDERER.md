@@ -93,6 +93,10 @@ The only implemented profile is `single_column_cv_v1`.
 
 The renderer uses simple section-heading paragraphs followed by block paragraphs. It does not create lists, tables, text boxes, images, comments, tracked changes, hyperlinks, or a DOCX template derived from an original resume.
 
+If the first source block has kind `heading` and its effective text exactly equals the section label, that block supplies the section heading instead of being emitted again as a body paragraph. The preview uses the same predicate. No trimming, normalization, case folding, deletion of later blocks or mutation of source/export data is performed. Paragraphs with matching text and non-matching headings remain untouched.
+
+The required summary field `reusedSectionHeadings` counts these promoted source blocks. `totalBlocks` still counts all source blocks, `totalSectionHeadings` equals `totalSections`, `totalBlockParagraphs = totalBlocks - reusedSectionHeadings` and `totalParagraphs = totalSectionHeadings + totalBlockParagraphs`. Reused headings cannot exceed either source blocks or sections. The Node and browser renderers share this construction and summary. This extends the public result summary; older result objects without the counter must be regenerated. No persisted result consumers were found in this repository.
+
 ## Text Rendering And Privacy
 
 Only these fields become visible document text:
@@ -223,6 +227,7 @@ This JSON example validates structurally with `DocxRenderResultSchema`. Its `con
     "totalBlocks": 1,
     "totalSectionHeadings": 1,
     "totalBlockParagraphs": 1,
+    "reusedSectionHeadings": 0,
     "totalParagraphs": 2
   }
 }
