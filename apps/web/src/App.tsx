@@ -10,11 +10,11 @@ import { useTailoringDemoController } from "./app/use-tailoring-demo-controller"
 
 export default function App() {
   const [sessionKey, setSessionKey] = useState(0);
-  return <TailoringApp key={sessionKey} onRestart={() => setSessionKey((value) => value + 1)} />;
+  return <TailoringApp key={sessionKey} focusOnMount={sessionKey > 0} onRestart={() => setSessionKey((value) => value + 1)} />;
 }
 
-function TailoringApp({ onRestart }: { onRestart: () => void }) {
-  const controller = useTailoringDemoController();
+function TailoringApp({ onRestart, focusOnMount }: { onRestart: () => void; focusOnMount: boolean }) {
+  const controller = useTailoringDemoController(focusOnMount);
   const {
     state,
     dispatch,
