@@ -66,6 +66,7 @@ export const DocxRenderSummarySchema = z
     totalSections: z.number().int().nonnegative(),
     totalBlocks: z.number().int().nonnegative(),
     totalSectionHeadings: z.number().int().nonnegative(),
+    reusedSectionHeadings: z.number().int().nonnegative(),
     totalBlockParagraphs: z.number().int().nonnegative(),
     totalParagraphs: z.number().int().nonnegative(),
   })
@@ -116,10 +117,17 @@ export const DocxRenderResultSchema = z
       });
     }
 
-    if (result.summary.totalBlockParagraphs !== result.summary.totalBlocks) {
+    if (result.summary.reusedSectionHeadings > Math.min(result.summary.totalSections, result.summary.totalBlocks)) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Docx summary totalBlockParagraphs must match totalBlocks.",
+        message: "Docx summary cannot reuse more headings than sections or source blocks.",
+        path: ["summary", "reusedSectionHeadings"],
+      });
+    }
+    if (result.summary.totalBlockParagraphs !== result.summary.totalBlocks - result.summary.reusedSectionHeadings) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Docx summary block paragraphs must exclude source blocks reused as section headings.",
         path: ["summary", "totalBlockParagraphs"],
       });
     }

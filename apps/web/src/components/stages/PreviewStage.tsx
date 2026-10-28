@@ -1,4 +1,5 @@
 import type { TailoringDemoState } from "../../app/tailoring-demo-state";
+import { hasLeadingSectionHeading } from "../../../../../src/core/resume/section-heading";
 import { EmptyState, LocationExplanation, Metric, TwoColumnText } from "./shared";
 
 export function PreviewStage({ state }: { state: TailoringDemoState }) {
@@ -22,7 +23,7 @@ export function PreviewStage({ state }: { state: TailoringDemoState }) {
         {applied.applicationResult.adaptedDocument.sections.map((section) => (
           <section key={section.sectionId}>
             <h3>{section.label}</h3>
-            {section.blocks.map((block) => (
+            {section.blocks.slice(hasLeadingSectionHeading(section) ? 1 : 0).map((block) => (
               <p key={block.blockId} className={block.applicationStatus === "rewritten" ? "rewritten-block" : undefined}>
                 {block.effectiveText}
               </p>

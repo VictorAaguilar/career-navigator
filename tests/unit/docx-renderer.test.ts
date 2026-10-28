@@ -32,6 +32,7 @@ import {
 } from "../../src/schemas";
 
 type BlockFixture = {
+  kind?: ResumeExportModel["sections"][number]["blocks"][number]["kind"];
   blockId: string;
   order: number;
   renderText: string;
@@ -79,7 +80,7 @@ const makeExportModel = (sections: SectionFixture[] = defaultSections()): Resume
         exportBlockId: buildResumeExportBlockId(exportModelId, section.sectionId, block.blockId),
         sectionId: section.sectionId,
         blockId: block.blockId,
-        kind: "bullet",
+        kind: block.kind ?? "bullet",
         order: block.order,
         originalText: block.renderText,
         effectiveText: block.renderText,
@@ -364,6 +365,7 @@ describe("DocxRenderResultSchema", () => {
     "totalSectionHeadings",
     "totalBlockParagraphs",
     "totalParagraphs",
+    "reusedSectionHeadings",
   ] as const)("rejects incoherent summary counter %s", async (field) => {
     const result = await renderDefault();
 
@@ -382,6 +384,7 @@ describe("DocxRenderResultSchema", () => {
     "totalSectionHeadings",
     "totalBlockParagraphs",
     "totalParagraphs",
+    "reusedSectionHeadings",
   ] as const)("rejects negative summary counter %s", async (field) => {
     const result = await renderDefault();
 
@@ -400,6 +403,7 @@ describe("DocxRenderResultSchema", () => {
     "totalSectionHeadings",
     "totalBlockParagraphs",
     "totalParagraphs",
+    "reusedSectionHeadings",
   ] as const)("rejects decimal summary counter %s", async (field) => {
     const result = await renderDefault();
 
@@ -461,6 +465,114 @@ describe("DocxRenderResultSchema", () => {
 });
 
 describe("renderResumeExportModelToDocx", () => {
+  it("preserves tabs, CRLF, spaces and XML escapes in a reused heading", async () => {
+    const text = "  Formación\t& proyectos\r\nEspaña  ";
+    const model = makeExportModel([{
+      sectionId: "literal-heading", label: text, order: 0,
+      blocks: [{ blockId: "heading", order: 0, kind: "heading", renderText: text }],
+    }]);
+    const result = await renderDefault(model);
+    const xml = await readZipText(await openResultZip(result), "word/document.xml");
+    expect(countOccurrences(xml, "<w:tab/>")).toBe(1);
+    expect(countOccurrences(xml, "<w:br/>")).toBe(1);
+    expect(xml).toContain('xml:space="preserve">  Formación</w:t>');
+    expect(xml).toContain('&amp; proyectos</w:t>');
+    expect(xml).toContain('España  </w:t>');
+    expect(result.summary.totalParagraphs).toBe(1);
+    expect(model.sections[0].blocks[0].renderText).toBe(text);
+  });
+
+  it("counts a section consisting only of a source heading once", async () => {
+    const model = makeExportModel([{
+      sectionId: "heading-only", label: "Experiencia", order: 0,
+      blocks: [{ blockId: "heading", order: 0, kind: "heading", renderText: "Experiencia" }],
+    }]);
+    const result = await renderDefault(model);
+    expect(result.summary).toEqual({
+      totalSections: 1, totalBlocks: 1, totalSectionHeadings: 1,
+      reusedSectionHeadings: 1, totalBlockParagraphs: 0, totalParagraphs: 1,
+    });
+    const xml = await readZipText(await openResultZip(result), "word/document.xml");
+    expect(countOccurrences(xml, "<w:p>")).toBe(1);
+  });
+
+  it("validates mixed generated and reused headings with exact counters", async () => {
+    const model = makeExportModel([
+      { sectionId: "a", label: "Experiencia", order: 0, blocks: [
+        { blockId: "a1", order: 0, kind: "heading", renderText: "Experiencia" },
+        { blockId: "a2", order: 1, renderText: "Texto original." },
+      ] },
+      { sectionId: "b", label: "Habilidades", order: 1, blocks: [
+        { blockId: "b1", order: 0, renderText: "React" },
+      ] },
+    ]);
+    const result = await renderDefault(model);
+    expect(result.summary).toEqual({
+      totalSections: 2, totalBlocks: 3, totalSectionHeadings: 2,
+      reusedSectionHeadings: 1, totalBlockParagraphs: 2, totalParagraphs: 4,
+    });
+    const xml = await readZipText(await openResultZip(result), "word/document.xml");
+    expect(countOccurrences(xml, "<w:p>")).toBe(4);
+    const { reusedSectionHeadings: _removed, ...withoutCounter } = result.summary;
+    expect(DocxRenderResultSchema.safeParse({ ...result, summary: withoutCounter }).success).toBe(false);
+    expect(DocxRenderResultSchema.safeParse({ ...result, summary: {
+      ...result.summary, reusedSectionHeadings: 3, totalBlockParagraphs: 0, totalParagraphs: 2,
+    } }).success).toBe(false);
+  });
+
+  it.each([
+    ["same heading", "EXPERIENCIA", "heading", "EXPERIENCIA", true],
+    ["same paragraph", "EXPERIENCIA", "paragraph", "EXPERIENCIA", false],
+    ["different heading", "Experiencia", "heading", "Trayectoria", false],
+    ["different casing", "EXPERIENCIA", "heading", "Experiencia", false],
+    ["literal spaces", "EXPERIENCIA", "heading", " EXPERIENCIA ", false],
+    ["Unicode heading", "Formación académica", "heading", "Formación académica", true],
+    ["literal matching spaces", " Experiencia ", "heading", " Experiencia ", true],
+  ] as const)("preserves source blocks and counts paragraphs for %s", async (_name, label, kind, text, reused) => {
+    const model = makeExportModel([{
+      sectionId: "section-heading", label, order: 0,
+      blocks: [
+        { blockId: "heading", order: 0, kind, renderText: text },
+        { blockId: "body", order: 1, renderText: "Contenido original con acentos." },
+      ],
+    }]);
+    const snapshot = mutableClone(model);
+    deepFreeze(model);
+    const result = await renderDefault(model);
+    const xml = await readZipText(await openResultZip(result), "word/document.xml");
+    expect(model).toEqual(snapshot);
+    expect(await renderDefault(model)).toEqual(result);
+    expect(xml).toContain(`xml:space="preserve">${text}</w:t>`);
+    expect(countOccurrences(xml, `xml:space="preserve">${label}</w:t>`)).toBe(text === label && !reused ? 2 : 1);
+    expect(xml).toContain("Contenido original con acentos.");
+    expect(result.summary).toEqual({
+      totalSections: 1, totalBlocks: 2, totalSectionHeadings: 1,
+      reusedSectionHeadings: reused ? 1 : 0,
+      totalBlockParagraphs: reused ? 1 : 2, totalParagraphs: reused ? 2 : 3,
+    });
+    expect(countOccurrences(xml, "<w:p>")).toBe(result.summary.totalParagraphs);
+    expect(DocxRenderResultSchema.safeParse(result).success).toBe(true);
+    for (const totalBlockParagraphs of [0, 3]) {
+      expect(DocxRenderResultSchema.safeParse({ ...result, summary: {
+        ...result.summary, totalBlockParagraphs, totalParagraphs: 1 + totalBlockParagraphs,
+      } }).success).toBe(false);
+    }
+  });
+
+  it("does not remove a matching heading after the first block", async () => {
+    const model = makeExportModel([{
+      sectionId: "section-heading", label: "Experiencia", order: 0,
+      blocks: [
+        { blockId: "body", order: 0, renderText: "Introducción." },
+        { blockId: "heading", order: 1, kind: "heading", renderText: "Experiencia" },
+      ],
+    }]);
+    const result = await renderDefault(model);
+    const xml = await readZipText(await openResultZip(result), "word/document.xml");
+    expect(countOccurrences(xml, 'xml:space="preserve">Experiencia</w:t>')).toBe(2);
+    expect(result.summary.totalParagraphs).toBe(3);
+  });
+
   it("returns a deterministic, schema-valid, deeply frozen DOCX artifact contract", async () => {
     const model = makeExportModel();
     const result = await renderDefault(model);
@@ -483,6 +595,7 @@ describe("renderResumeExportModelToDocx", () => {
         totalSections: 1,
         totalBlocks: 1,
         totalSectionHeadings: 1,
+        reusedSectionHeadings: 0,
         totalBlockParagraphs: 1,
         totalParagraphs: 2,
       },

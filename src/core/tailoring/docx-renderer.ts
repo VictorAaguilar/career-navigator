@@ -9,6 +9,7 @@ import {
   type ParagraphChild,
 } from "docx";
 import JSZip from "jszip";
+import { hasLeadingSectionHeading } from "../resume/section-heading";
 import type { ResumeExportBlock, ResumeExportModel } from "../../schemas/export";
 import { ResumeExportModelSchema } from "../../schemas/export";
 import {
@@ -128,7 +129,7 @@ async function packDocument(exportModel: ResumeExportModel): Promise<Buffer> {
 export function buildResumeExportModelDocxDocument(exportModel: ResumeExportModel): Document {
   const children = exportModel.sections.flatMap((section) => [
     buildSectionHeading(section.label),
-    ...section.blocks.map((block) => buildBlockParagraph(block)),
+    ...section.blocks.slice(hasLeadingSectionHeading(section) ? 1 : 0).map((block) => buildBlockParagraph(block)),
   ]);
 
   return new Document({
@@ -169,14 +170,7 @@ function buildSectionHeading(label: string): Paragraph {
       line: LINE_SPACING_TWIPS,
       lineRule: LineRuleType.AUTO,
     },
-    children: [
-      new TextRun({
-        text: label,
-        font: DOCX_RENDER_PROFILE_SINGLE_COLUMN_V1.typography.fontFamily,
-        size: pointsToHalfPoints(DOCX_RENDER_PROFILE_SINGLE_COLUMN_V1.typography.sectionHeadingFontSizePoints),
-        bold: DOCX_RENDER_PROFILE_SINGLE_COLUMN_V1.typography.sectionHeadingBold,
-      }),
-    ],
+    children: textRunsFromRenderText(label, true),
   });
 }
 
@@ -191,7 +185,7 @@ function buildBlockParagraph(block: ResumeExportBlock): Paragraph {
   });
 }
 
-function textRunsFromRenderText(text: string): ParagraphChild[] {
+function textRunsFromRenderText(text: string, heading = false): ParagraphChild[] {
   const children: ParagraphChild[] = [];
   let buffer = "";
 
@@ -199,7 +193,7 @@ function textRunsFromRenderText(text: string): ParagraphChild[] {
     if (buffer.length === 0) {
       return;
     }
-    children.push(baseTextRun({ text: buffer }));
+    children.push(baseTextRun({ text: buffer }, heading));
     buffer = "";
   };
 
@@ -207,12 +201,12 @@ function textRunsFromRenderText(text: string): ParagraphChild[] {
     const character = text[index];
     if (character === "\t") {
       flushBuffer();
-      children.push(baseTextRun({ children: [new Tab()] }));
+      children.push(baseTextRun({ children: [new Tab()] }, heading));
       continue;
     }
     if (character === "\r") {
       flushBuffer();
-      children.push(baseTextRun({ break: 1 }));
+      children.push(baseTextRun({ break: 1 }, heading));
       if (text[index + 1] === "\n") {
         index += 1;
       }
@@ -220,7 +214,7 @@ function textRunsFromRenderText(text: string): ParagraphChild[] {
     }
     if (character === "\n") {
       flushBuffer();
-      children.push(baseTextRun({ break: 1 }));
+      children.push(baseTextRun({ break: 1 }, heading));
       continue;
     }
     buffer += character;
@@ -230,11 +224,14 @@ function textRunsFromRenderText(text: string): ParagraphChild[] {
   return children;
 }
 
-function baseTextRun(options: { text?: string; children?: readonly (Tab | string)[]; break?: number }): TextRun {
+function baseTextRun(options: { text?: string; children?: readonly (Tab | string)[]; break?: number }, heading = false): TextRun {
   return new TextRun({
     ...options,
     font: DOCX_RENDER_PROFILE_SINGLE_COLUMN_V1.typography.fontFamily,
-    size: pointsToHalfPoints(DOCX_RENDER_PROFILE_SINGLE_COLUMN_V1.typography.baseFontSizePoints),
+    size: pointsToHalfPoints(heading
+      ? DOCX_RENDER_PROFILE_SINGLE_COLUMN_V1.typography.sectionHeadingFontSizePoints
+      : DOCX_RENDER_PROFILE_SINGLE_COLUMN_V1.typography.baseFontSizePoints),
+    bold: heading ? DOCX_RENDER_PROFILE_SINGLE_COLUMN_V1.typography.sectionHeadingBold : undefined,
   });
 }
 
@@ -308,12 +305,14 @@ function ensureZipSignature(content: Uint8Array): void {
 
 export function buildResumeExportModelDocxSummary(exportModel: ResumeExportModel): DocxRenderSummary {
   const totalBlocks = exportModel.sections.reduce((count, section) => count + section.blocks.length, 0);
+  const reusedHeadings = exportModel.sections.filter(hasLeadingSectionHeading).length;
   return {
     totalSections: exportModel.sections.length,
     totalBlocks,
     totalSectionHeadings: exportModel.sections.length,
-    totalBlockParagraphs: totalBlocks,
-    totalParagraphs: exportModel.sections.length + totalBlocks,
+    reusedSectionHeadings: reusedHeadings,
+    totalBlockParagraphs: totalBlocks - reusedHeadings,
+    totalParagraphs: exportModel.sections.length + totalBlocks - reusedHeadings,
   };
 }
 
