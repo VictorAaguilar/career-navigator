@@ -28,7 +28,8 @@ export function JobStage({ state, dispatch, textareaRef, onFileSelected, onClear
           id="job-file-input"
           type="file"
           accept=".txt,.md,.markdown,text/plain,text/markdown,text/x-markdown"
-          aria-describedby="job-import-help job-import-status"
+          aria-describedby={`job-import-help job-import-status${state.jobImport.status === "error" ? " job-import-error" : ""}`}
+          aria-invalid={state.jobImport.status === "error"}
           onChange={(event) => {
             onFileSelected(event.currentTarget.files?.[0] ?? null);
             event.currentTarget.value = "";
@@ -38,7 +39,7 @@ export function JobStage({ state, dispatch, textareaRef, onFileSelected, onClear
           {jobImportStatusText(state)}
         </p>
         {state.jobImport.status === "error" ? (
-          <p className="field-error" role="alert">
+          <p id="job-import-error" className="field-error" role="alert">
             {getJobImportErrorMessage(state.jobImport.errorCode)}
           </p>
         ) : null}

@@ -99,13 +99,15 @@ export function ValidationSummary({
   id,
   status,
   findings,
+  announce = false,
 }: {
   id?: string;
   status: string;
   findings: readonly string[];
+  announce?: boolean;
 }) {
   return (
-    <div id={id} className="validation-summary">
+    <div id={id} className="validation-summary" role={announce ? "status" : undefined} aria-atomic={announce ? true : undefined}>
       <strong>Validación: {validationLabel(status)}</strong>
       {findings.length === 0 ? <span>Sin advertencias.</span> : <span>{findings.join(" · ")}</span>}
     </div>
