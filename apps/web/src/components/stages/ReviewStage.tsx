@@ -29,11 +29,12 @@ export function ReviewStage({
 
   return (
     <div className="demo-list">
-      {state.analysis.proposalRows.map((proposal) => {
+      {state.analysis.proposalRows.map((proposal, index) => {
         const validationId = proposal.validationId;
         const validationDescriptionId = `${validationId}-validation`;
         const editHelpId = `${validationId}-edit-help`;
         const editInvalid = proposal.validationStatus === "rejected";
+        const proposalContext = `propuesta ${index + 1}: ${proposal.requirementText}`;
 
         return (
           <article className="demo-item" key={validationId}>
@@ -57,10 +58,12 @@ export function ReviewStage({
               }
               aria-describedby={`${editHelpId} ${validationDescriptionId}`}
               aria-invalid={editInvalid}
+              aria-label={`Editar ${proposalContext}`}
             />
             <div className="field-row">
               <button
                 type="button"
+                aria-label={`Restaurar ${proposalContext}`}
                 onClick={() => dispatch({ type: "restore_proposal", validationId })}
               >
                 Restaurar propuesta
@@ -70,10 +73,12 @@ export function ReviewStage({
               id={validationDescriptionId}
               status={proposal.validationStatus}
               findings={proposal.findingLabels}
+              announce
             />
-            <fieldset className="decision-group">
+            <fieldset className="decision-group" aria-label={`Decisión humana para ${proposalContext}`}>
               <legend>Decisión humana</legend>
               <DecisionOption
+                name={validationId}
                 label="Aceptar"
                 checked={state.reviewDecisions[validationId] === "approved"}
                 disabled={editInvalid}
@@ -82,6 +87,7 @@ export function ReviewStage({
                 }
               />
               <DecisionOption
+                name={validationId}
                 label="Rechazar"
                 checked={state.reviewDecisions[validationId] === "rejected"}
                 onChange={() =>
@@ -89,6 +95,7 @@ export function ReviewStage({
                 }
               />
               <DecisionOption
+                name={validationId}
                 label="Pedir cambios"
                 checked={state.reviewDecisions[validationId] === "changes_requested"}
                 onChange={() =>
@@ -107,11 +114,13 @@ export function ReviewStage({
 }
 
 function DecisionOption({
+  name,
   label,
   checked,
   disabled = false,
   onChange,
 }: {
+  name: string;
   label: string;
   checked: boolean;
   disabled?: boolean;
@@ -119,7 +128,7 @@ function DecisionOption({
 }) {
   return (
     <label className="decision-option">
-      <input type="radio" checked={checked} disabled={disabled} onChange={onChange} />
+      <input type="radio" name={name} checked={checked} disabled={disabled} onChange={onChange} />
       <span>{label}</span>
     </label>
   );

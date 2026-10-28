@@ -49,7 +49,8 @@ export function ResumeStage({
           id="resume-file-input"
           type="file"
           accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          aria-describedby="resume-import-help resume-import-status"
+          aria-describedby={`resume-import-help resume-import-status${state.resumeImport.status === "error" ? " resume-import-error" : ""}`}
+          aria-invalid={state.resumeImport.status === "error"}
           onChange={(event) => {
             onFileSelected(event.currentTarget.files?.[0] ?? null);
             event.currentTarget.value = "";
@@ -59,7 +60,7 @@ export function ResumeStage({
           {resumeImportStatusText(state)}
         </p>
         {state.resumeImport.status === "error" ? (
-          <p className="field-error" role="alert">
+          <p id="resume-import-error" className="field-error" role="alert">
             {getResumeImportErrorMessage(state.resumeImport.errorCode)}
           </p>
         ) : null}
@@ -187,6 +188,7 @@ function StructureReview({
               <label>
                 Tipo de sección
                 <select
+                  aria-label={`Tipo de sección ${index + 1}: ${section.originalHeading ?? STRUCTURED_RESUME_SECTION_LABELS[section.kind]}`}
                   value={section.kind}
                   onChange={(event) =>
                     dispatch({
