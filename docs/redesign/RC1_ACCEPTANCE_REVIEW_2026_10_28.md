@@ -62,3 +62,7 @@ La validación final `npm.cmd run release:check` sobre las correcciones, incluid
 El servidor local usado para las capturas se detuvo al terminar. El gate limpia el build temporal; las evidencias de esta ronda quedan fuera del repositorio en la ruta temporal indicada.
 
 La ronda no aumenta por sí sola el porcentaje estimado de preparación. Tras corregir encabezados duplicados y seguimiento móvil, sigue pendiente validar el DOCX en un lector real y cerrar la revisión manual de accesibilidad antes de declarar completada la aceptación del producto.
+
+## Seguimiento posterior
+
+La ronda de [teclado y Word](RC1_KEYBOARD_AND_WORD_ACCEPTANCE_2026_10_28.md) verifica apertura y lectura de una muestra de una página en Word 16.0.20527.20088 y corrige el foco tras `Nueva adaptación`. Actualiza únicamente esos resultados: quedan pendientes documentos largos, reescrituras editadas aprobadas, otros lectores y auditoría manual de accesibilidad. Las limitaciones anteriores describen la evidencia disponible en la primera ronda, no niegan la comprobación posterior.

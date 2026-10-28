@@ -129,7 +129,7 @@ async function run() {
       await runPagesImportScenario(page, docxPath, pdfPath, offerPath, downloadDir);
     }
     await runResponsiveScenario(page);
-    await runKeyboardScenario(page);
+    await runKeyboardScenario(page, downloadDir);
     assertNoTelemetryFailures(telemetry);
   } finally {
     await browser?.close();
@@ -222,6 +222,7 @@ async function runReleaseCandidateScenario(page, downloadDir) {
 async function runRestartScenario(page) {
   await page.getByRole("button", { name: "Nueva adaptación", exact: true }).click();
   await expectText(page, "Paso 1 de 9");
+  await expectStageFocus(page, "Comienza una nueva adaptación");
   await confirmDemoAndStart(page);
   if (await page.getByRole("textbox", { name: "Currículum", exact: true }).inputValue() !== "") {
     throw new Error("RC_RESTART_RETAINED_RESUME");
@@ -300,7 +301,7 @@ async function runPagesImportScenario(page, docxPath, pdfPath, offerPath, downlo
   await expectText(page, "PDF React TypeScript");
 }
 
-async function runKeyboardScenario(page) {
+async function runKeyboardScenario(page, downloadDir) {
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.goto(baseUrl, { waitUntil: "networkidle" });
   await page.keyboard.press("Tab");
@@ -319,7 +320,7 @@ async function runKeyboardScenario(page) {
   await page.keyboard.press("Space");
   await focusByKeyboard(page, "Comenzar");
   await page.keyboard.press("Enter");
-  await expectText(page, "Currículum");
+  await expectStageFocus(page, "Introduce tu experiencia profesional");
   await focusByKeyboard(page, "Currículum");
   await page.keyboard.insertText("EXPERIENCIA\nReact TypeScript");
   await focusByKeyboard(page, "Detectar estructura");
@@ -332,6 +333,77 @@ async function runKeyboardScenario(page) {
   await focusByKeyboard(page, "Confirmar estructura");
   await page.keyboard.press("Enter");
   await expectText(page, "Modo estructurado seleccionado");
+
+  await activateByKeyboard(page, "Continuar");
+  await expectStageFocus(page, "Añade la oferta laboral objetivo");
+  await focusByKeyboard(page, "Oferta laboral");
+  await page.keyboard.insertText(offerText);
+  await activateByKeyboard(page, "Continuar");
+  await expectStageFocus(page, "Analiza requisitos y compatibilidad");
+  await activateByKeyboard(page, "Ejecutar análisis determinista");
+  await expectText(page, "Puntuación");
+  await activateByKeyboard(page, "Continuar");
+  await expectStageFocus(page, "Revisa requisitos y evidencias encontradas");
+  await activateByKeyboard(page, "Continuar");
+  await expectStageFocus(page, "Compara las mejoras sugeridas");
+  await activateByKeyboard(page, "Continuar");
+  await expectStageFocus(page, "Aprueba, rechaza o edita cada propuesta");
+
+  const proposalCount = await page.getByLabel("Rechazar", { exact: true }).count();
+  for (let index = 0; index < proposalCount; index += 1) {
+    await focusByKeyboard(page, "Aceptar");
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Tab");
+  }
+  if (!await page.getByLabel("Rechazar", { exact: true }).evaluateAll((inputs) => inputs.every((input) => input.checked))) {
+    throw new Error("RC_KEYBOARD_REVIEW_SELECTION_FAILED");
+  }
+  await activateByKeyboard(page, proposalCount > 0
+    ? "Aplicar decisiones aprobadas"
+    : "Generar vista previa sin cambios");
+  await activateByKeyboard(page, "Continuar");
+  await expectStageFocus(page, "Revisa el currículum adaptado");
+  await activateByKeyboard(page, "Anterior");
+  await expectStageFocus(page, "Aprueba, rechaza o edita cada propuesta");
+  await activateByKeyboard(page, "Continuar");
+  await expectStageFocus(page, "Revisa el currículum adaptado");
+  await activateByKeyboard(page, "Continuar");
+  await expectStageFocus(page, "Genera y descarga el documento DOCX");
+
+  const downloadPromise = page.waitForEvent("download");
+  await activateByKeyboard(page, "Descargar currículum adaptado");
+  const download = await downloadPromise;
+  if (download.suggestedFilename() !== "curriculum-adaptado.docx") {
+    throw new Error("RC_KEYBOARD_UNEXPECTED_FILENAME");
+  }
+  const downloadPath = join(downloadDir, "keyboard-curriculum-adaptado.docx");
+  await download.saveAs(downloadPath);
+  await assertDownloadedDocx(downloadPath);
+  await activateByKeyboard(page, "Nueva adaptación");
+  await expectStageFocus(page, "Comienza una nueva adaptación");
+  const confirmation = page.getByRole("checkbox");
+  if (await confirmation.isChecked() || await page.getByRole("button", { name: "Comenzar", exact: true }).isEnabled()) {
+    throw new Error("RC_KEYBOARD_RESTART_CONFIRMATION_RETAINED");
+  }
+  await focusByKeyboard(page, "Confirmo que usaré");
+  await page.keyboard.press("Space");
+  await activateByKeyboard(page, "Comenzar");
+  await expectStageFocus(page, "Introduce tu experiencia profesional");
+  if (await page.getByRole("textbox", { name: "Currículum", exact: true }).inputValue() !== "") {
+    throw new Error("RC_KEYBOARD_RESTART_RETAINED_RESUME");
+  }
+}
+
+async function activateByKeyboard(page, name) {
+  await focusByKeyboard(page, name);
+  await page.keyboard.press("Enter");
+}
+
+async function expectStageFocus(page, title) {
+  await page.waitForFunction((expected) => {
+    const active = document.activeElement;
+    return active?.id === "stage-title" && active.textContent?.trim() === expected;
+  }, title);
 }
 
 async function focusByKeyboard(page, accessibleName) {

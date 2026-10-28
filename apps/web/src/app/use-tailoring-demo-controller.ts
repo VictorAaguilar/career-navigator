@@ -45,7 +45,7 @@ export async function downloadTailoringDemoDocx(
   return result;
 }
 
-export function useTailoringDemoController() {
+export function useTailoringDemoController(focusOnMount = false) {
   const [state, dispatch] = useReducer(tailoringDemoReducer, undefined, createTailoringDemoState);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isApplyingReview, setIsApplyingReview] = useState(false);
@@ -53,7 +53,7 @@ export function useTailoringDemoController() {
   const resumeTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const jobTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const resumeStructureSummaryRef = useRef<HTMLDivElement | null>(null);
-  const stageFocusInitializedRef = useRef(false);
+  const previousStageIdRef = useRef(state.session.currentStageId);
   const resumeImportSequenceRef = useRef(0);
   const jobImportSequenceRef = useRef(0);
   const session = state.session;
@@ -66,12 +66,11 @@ export function useTailoringDemoController() {
   const guardMessage = getStageGuardMessage(state);
 
   useEffect(() => {
-    if (!stageFocusInitializedRef.current) {
-      stageFocusInitializedRef.current = true;
-      return;
-    }
+    const stageChanged = previousStageIdRef.current !== session.currentStageId;
+    previousStageIdRef.current = session.currentStageId;
+    if (!stageChanged && !focusOnMount) return;
     titleRef.current?.focus({ preventScroll: true });
-  }, [session.currentStageId]);
+  }, [session.currentStageId, focusOnMount]);
 
   const handlePrevious = () => {
     dispatch({ type: "navigate", direction: "back" });

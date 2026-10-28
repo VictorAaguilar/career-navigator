@@ -19,7 +19,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 | Parsing estructural | Aprobado | `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure` | La clasificación sigue siendo revisable por humanos. |
 | Trazabilidad de evidencia y targeting | Aprobado | `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting` | Las ubicaciones aproximadas en modo plano requieren revisión. |
 | Revisión humana | Aprobado | `tests/unit/rewrite-review-decisions.test.ts`, `tests/unit/tailoring-ui-demo.test.ts` | No aplica cambios sin decisión explícita. |
-| Vista previa y DOCX | Aprobado | `tests/unit/docx-renderer.test.ts`, `npm run web:e2e:rc` | Validación automatizada de estructura ZIP y contenido esperado. |
+| Vista previa y DOCX | Aprobado con limitaciones | `tests/unit/docx-renderer.test.ts`, `npm run web:e2e:rc`, `RC1_KEYBOARD_AND_WORD_ACCEPTANCE_2026_10_28.md` | Una muestra de una página abierta y revisada en Word 16.0.20527.20088; faltan documentos largos, reescrituras editadas y otros lectores. |
 | Build de producción | Aprobado | `npm run web:build`, `npm run web:bundle:check` | Presupuesto automatizado para assets iniciales. |
 | Chrome | Aprobado | `PLAYWRIGHT_BROWSER_CHANNEL=chrome npm run web:e2e:rc` | Canal principal recomendado para RC. |
 | Microsoft Edge | Aprobado | `PLAYWRIGHT_BROWSER_CHANNEL=msedge npm run web:e2e:rc` | Validado como segundo canal Chromium-based. |
@@ -27,7 +27,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 | Firefox | No aprobado | Sin runner ni matriz de compatibilidad dedicada | Fuera del alcance de RC1. |
 | Safari | No probado | No disponible en el entorno Windows de validación | Fuera del alcance de RC1. |
 | Responsive | Aprobado con limitaciones | `npm run web:e2e:rc` en 320, 375, 768, 1024 y 1440 px | Revisión visual manual sigue recomendada. |
-| Teclado | Aprobado con limitaciones | `npm run web:e2e:rc` cubre skip link y avance básico por teclado | No sustituye auditoría completa WCAG. |
+| Teclado | Aprobado con limitaciones | `npm run web:e2e:rc` cubre las nueve etapas, radios, descarga, reinicio con foco y segunda adaptación por teclado | No sustituye lector de pantalla ni auditoría completa WCAG; no cubre selección nativa de archivos por teclado. |
 | Privacidad local | Aprobado | E2E bloquea requests externos; tests buscan storage/red | El usuario debe cerrar o limpiar la pestaña para descartar estado en memoria. |
 | Seguridad de dependencias de producción | Aprobado | `npm audit --omit=dev` | Vulnerabilidades dev conocidas no forman parte del paquete de producción. |
 | GitHub Pages | Aprobado | Workflow `Deploy Career Navigator RC to GitHub Pages`, deploy y public smoke pasan en `universal-redesign` | Es sitio público de evaluación; usar datos ficticios. |
