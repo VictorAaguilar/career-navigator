@@ -8,6 +8,7 @@
   --color-border: #d7ded8;
   --color-accent: #23645a;
   --color-accent-strong: #174a43;
+  --color-focus: #174a43;
   --color-complete: #2f6f4e;
   --color-visited: #6c5b2e;
   --color-disabled: #9ca5a1;
@@ -67,8 +68,10 @@ button:disabled {
 button:focus-visible,
 .skip-link:focus-visible,
 .stepper-item:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid rgb(35 100 90 / 32%);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 
@@ -109,6 +112,7 @@ select:focus-visible {
 }
 
 .app-header {
+  overflow-wrap: anywhere;
   margin-bottom: var(--space-4);
 }
 
@@ -138,6 +142,7 @@ select:focus-visible {
 
 .workflow-stepper,
 .stage-card {
+  overflow-wrap: anywhere;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-panel);
   background: rgb(255 255 255 / 94%);
@@ -412,7 +417,7 @@ select:focus-visible {
 }
 
 .resume-import-panel input[type="file"]:focus-visible {
-  outline: 3px solid rgb(35 100 90 / 24%);
+  outline: 3px solid var(--color-focus);
   border-color: var(--color-accent);
 }
 
@@ -656,7 +661,7 @@ select:focus-visible {
 
 .demo-form textarea:focus,
 .demo-item textarea:focus {
-  outline: 3px solid rgb(35 100 90 / 24%);
+  outline: 3px solid var(--color-focus);
   border-color: var(--color-accent);
 }
 
@@ -864,7 +869,7 @@ select:focus-visible {
   }
 
   .stepper-item {
-    width: 11rem;
+    width: min(11rem, calc(100vw - 3rem));
     grid-template-columns: 1.8rem minmax(0, 1fr);
     padding: 0.6rem;
   }
@@ -875,7 +880,7 @@ select:focus-visible {
   }
 
   .stage-card {
-    padding: 1.35rem;
+    padding: 16px;
   }
 
   .stage-placeholder h2 {
@@ -895,6 +900,11 @@ select:focus-visible {
   .intro-band {
     align-items: stretch;
     flex-direction: column;
+    padding: 16px;
+  }
+
+  button {
+    padding-inline: 16px;
   }
 
   .workflow-navigation {

@@ -7,6 +7,7 @@ import JSZip from "jszip";
 import { launchBrowserWithFallback } from "./tailoring-demo-browser-options.mjs";
 import { runLongDocxScenario } from "./long-docx-scenario.mjs";
 import { runAccessibleReviewScenario } from "./accessible-review-scenario.mjs";
+import { runTextResizingScenario } from "./text-resizing-scenario.mjs";
 
 const headed = process.argv.includes("--headed");
 const options = parseOptions(process.argv.slice(2));
@@ -134,6 +135,7 @@ async function run() {
     await runKeyboardScenario(page, downloadDir);
     await runLongDocxScenario(page, { baseUrl, downloadDir });
     await runAccessibleReviewScenario(page, baseUrl);
+    await runTextResizingScenario(page, baseUrl);
     assertNoTelemetryFailures(telemetry);
   } finally {
     await browser?.close();
