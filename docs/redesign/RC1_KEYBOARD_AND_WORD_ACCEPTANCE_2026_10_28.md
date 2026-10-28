@@ -57,6 +57,8 @@ Resultado: compatibilidad básica de apertura y lectura aprobada con limitacione
 
 No se interpreta el resultado como cierre completo del producto. La evidencia permite cerrar el defecto de reinicio y demostrar lectura básica de un DOCX real, manteniendo explícitos los límites anteriores.
 
+Seguimiento: la [ronda de DOCX largo](RC1_LONG_DOCX_ACCEPTANCE_2026_10_28.md) añade una muestra de cuatro páginas con edición aprobada, preservación exacta de contenido y revisión en Word. Los pendientes de documentos largos y edición se cubren para esa muestra, sin extender la aprobación a todos los documentos o lectores.
+
 ## Verificación técnica
 
 `npm.cmd run release:check` finalizó con código 0: 1115 tests en 23 archivos, typechecks raíz y web, build, presupuesto de bundle, audit de producción con cero vulnerabilidades, E2E RC y Pages con Chrome y comprobación del artefacto Pages. El escenario de teclado ampliado se ejecutó en ambas variantes de build. `git diff --check` pasó. No se añadieron dependencias ni se modificaron los motores de matching, scoring o exportación.

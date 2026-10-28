@@ -19,7 +19,7 @@ No se declara listo para producción pública, multiusuario ni uso con datos sen
 | Parsing estructural | Aprobado | `tests/unit/structured-resume-parsing.test.ts`, `npm run web:e2e:structure` | La clasificación sigue siendo revisable por humanos. |
 | Trazabilidad de evidencia y targeting | Aprobado | `tests/unit/structured-targeting-explanations.test.ts`, `npm run web:e2e:targeting` | Las ubicaciones aproximadas en modo plano requieren revisión. |
 | Revisión humana | Aprobado | `tests/unit/rewrite-review-decisions.test.ts`, `tests/unit/tailoring-ui-demo.test.ts` | No aplica cambios sin decisión explícita. |
-| Vista previa y DOCX | Aprobado con limitaciones | `tests/unit/docx-renderer.test.ts`, `npm run web:e2e:rc`, `RC1_KEYBOARD_AND_WORD_ACCEPTANCE_2026_10_28.md` | Una muestra de una página abierta y revisada en Word 16.0.20527.20088; faltan documentos largos, reescrituras editadas y otros lectores. |
+| Vista previa y DOCX | Aprobado con limitaciones | `tests/unit/docx-renderer.test.ts`, `npm run web:e2e:rc`, `RC1_KEYBOARD_AND_WORD_ACCEPTANCE_2026_10_28.md`, `RC1_LONG_DOCX_ACCEPTANCE_2026_10_28.md` | Muestras de una y cuatro páginas revisadas en Word 16.0.20527.20088, incluida una edición aprobada; no garantiza otros documentos, lectores o fuentes. |
 | Build de producción | Aprobado | `npm run web:build`, `npm run web:bundle:check` | Presupuesto automatizado para assets iniciales. |
 | Chrome | Aprobado | `PLAYWRIGHT_BROWSER_CHANNEL=chrome npm run web:e2e:rc` | Canal principal recomendado para RC. |
 | Microsoft Edge | Aprobado | `PLAYWRIGHT_BROWSER_CHANNEL=msedge npm run web:e2e:rc` | Validado como segundo canal Chromium-based. |

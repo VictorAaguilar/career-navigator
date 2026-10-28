@@ -5,6 +5,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { chromium } from "playwright";
 import JSZip from "jszip";
 import { launchBrowserWithFallback } from "./tailoring-demo-browser-options.mjs";
+import { runLongDocxScenario } from "./long-docx-scenario.mjs";
 
 const headed = process.argv.includes("--headed");
 const options = parseOptions(process.argv.slice(2));
@@ -130,6 +131,7 @@ async function run() {
     }
     await runResponsiveScenario(page);
     await runKeyboardScenario(page, downloadDir);
+    await runLongDocxScenario(page, { baseUrl, downloadDir });
     assertNoTelemetryFailures(telemetry);
   } finally {
     await browser?.close();
