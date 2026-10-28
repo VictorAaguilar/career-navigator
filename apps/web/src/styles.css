@@ -864,7 +864,7 @@ select:focus-visible {
   }
 
   .stepper-item {
-    width: 9rem;
+    width: 11rem;
     grid-template-columns: 1.8rem minmax(0, 1fr);
     padding: 0.6rem;
   }
